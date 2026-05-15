@@ -15,7 +15,7 @@ window.sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_OUT') {
         const isPublic = publicPaths.some(p => currentPath === p || currentPath.startsWith(p));
         if (!isPublic) {
-            window.location.replace('/pages/login.html');
+            window.location.replace('/pages/login');
         }
     }
     // We do NOT redirect on SIGNED_IN here to avoid race conditions with auth_guard.js

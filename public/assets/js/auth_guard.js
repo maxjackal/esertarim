@@ -40,7 +40,8 @@
             showPage();
             return;
         }
-        window.location.replace(targetPath);
+        // Vercel cleanUrls ile tam uyum için .html olmadan yönlendir
+        window.location.replace(targetClean);
     };
 
     try {

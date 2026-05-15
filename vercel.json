@@ -2,5 +2,19 @@
   "buildCommand": "echo 'No build command needed for static site'",
   "outputDirectory": "public",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/kayit-ekle", "destination": "/pages/ledger-entry-create.html" },
+    { "source": "/kayitlar", "destination": "/pages/ledger-entries.html" },
+    { "source": "/defterler", "destination": "/pages/ledgers.html" },
+    { "source": "/defter-detay", "destination": "/pages/ledger-detail.html" },
+    { "source": "/tahsilatlar", "destination": "/pages/collections.html" },
+    { "source": "/acik-alacaklar", "destination": "/pages/open_receivables.html" },
+    { "source": "/tahsilat-raporu", "destination": "/pages/collection_reports.html" },
+    { "source": "/satici-raporu", "destination": "/pages/seller-report.html" },
+    { "source": "/urunler", "destination": "/pages/products.html" },
+    { "source": "/saticilar", "destination": "/pages/sellers.html" },
+    { "source": "/alicilar", "destination": "/pages/buyers.html" },
+    { "source": "/giris", "destination": "/pages/login.html" }
+  ]
 }
