@@ -4,17 +4,17 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/kayit-ekle", "destination": "/pages/ledger-entry-create.html" },
-    { "source": "/kayitlar", "destination": "/pages/ledger-entries.html" },
-    { "source": "/defterler", "destination": "/pages/ledgers.html" },
-    { "source": "/defter-detay", "destination": "/pages/ledger-detail.html" },
-    { "source": "/tahsilatlar", "destination": "/pages/collections.html" },
-    { "source": "/acik-alacaklar", "destination": "/pages/open_receivables.html" },
-    { "source": "/tahsilat-raporu", "destination": "/pages/collection_reports.html" },
-    { "source": "/satici-raporu", "destination": "/pages/seller-report.html" },
-    { "source": "/urunler", "destination": "/pages/products.html" },
-    { "source": "/saticilar", "destination": "/pages/sellers.html" },
-    { "source": "/alicilar", "destination": "/pages/buyers.html" },
-    { "source": "/giris", "destination": "/pages/login.html" }
+    { "source": "/kayit-ekle", "destination": "/pages/ledger-entry-create" },
+    { "source": "/kayitlar", "destination": "/pages/ledger-entries" },
+    { "source": "/defterler", "destination": "/pages/ledgers" },
+    { "source": "/defter-detay", "destination": "/pages/ledger-detail" },
+    { "source": "/tahsilatlar", "destination": "/pages/collections" },
+    { "source": "/acik-alacaklar", "destination": "/pages/open_receivables" },
+    { "source": "/tahsilat-raporu", "destination": "/pages/collection_reports" },
+    { "source": "/satici-raporu", "destination": "/pages/seller-report" },
+    { "source": "/urunler", "destination": "/pages/products" },
+    { "source": "/saticilar", "destination": "/pages/sellers" },
+    { "source": "/alicilar", "destination": "/pages/buyers" },
+    { "source": "/giris", "destination": "/pages/login" }
   ]
 }
