@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Defter Kayıtları</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body data-page-title="Defter Kayıtları" class="bg-slate-50 text-slate-800">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+
+            <main class="app-main">
+                <div id="topbarMount"></div>
+
+                <div class="app-content">
+                    <div class="mx-auto max-w-7xl px-4 py-6">
+                        <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h1 class="text-2xl font-bold text-slate-900">Defter Kayıtları</h1>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Satıcı, alıcı ve ürün bazlı kayıtları görüntüleyin, filtreleyin ve tahsilat
+                                    işlemlerini yönetin.
+                                </p>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <a href="/pages/ledger_entry_create.html"
+                                    class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                                    Yeni Kayıt
+                                </a>
+                            </div>
+                        </div>
+
+                        <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+                                <fieldset class="d360-field">
+                                    <legend>Başlangıç Tarihi</legend>
+                                    <input id="fromDate" type="date" class="d360-input" />
+                                </fieldset>
+
+                                <fieldset class="d360-field">
+                                    <legend>Bitiş Tarihi</legend>
+                                    <input id="toDate" type="date" class="d360-input" />
+                                </fieldset>
+
+                                <fieldset class="d360-field relative">
+                                    <legend>Satıcı</legend>
+
+                                    <input id="sellerSearch" type="text" class="d360-input"
+                                        placeholder="Satıcı adı yazın" autocomplete="off" />
+
+                                    <input id="sellerId" type="hidden" />
+
+                                    <div id="sellerDropdown"
+                                        class="absolute left-0 right-0 top-[calc(100%+8px)] z-30 hidden max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="d360-field">
+                                    <legend>Alıcı</legend>
+                                    <select id="buyerFilter" class="d360-select">
+                                        <option value="">Tümü</option>
+                                    </select>
+                                </fieldset>
+
+                                <fieldset class="d360-field">
+                                    <legend>Ürün</legend>
+                                    <select id="productFilter" class="d360-select">
+                                        <option value="">Tümü</option>
+                                    </select>
+                                </fieldset>
+
+                                <label
+                                    class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                    <input id="onlyWarnings" type="checkbox" class="h-4 w-4 rounded border-slate-300" />
+                                    <span class="text-sm font-medium text-slate-700">Sadece uyarılı kayıtlar</span>
+                                </label>
+                            </div>
+
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                <button id="filterBtn"
+                                    class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                                    Filtrele
+                                </button>
+
+                                <button id="clearBtn"
+                                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                    Temizle
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="mb-4 flex items-center justify-between gap-3">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-900">Kayıt Listesi</h2>
+                                    <p class="mt-1 text-sm text-slate-500">
+                                        Satıra çift tıklayarak detay ekranına geçebilirsiniz.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 text-left text-slate-500">
+                                            <th class="py-3 pr-4">Tarih</th>
+                                            <th class="py-3 pr-4">Satıcı</th>
+                                            <th class="py-3 pr-4">Alıcı</th>
+                                            <th class="py-3 pr-4">Ürün</th>
+                                            <th class="py-3 pr-4">Kasa</th>
+                                            <th class="py-3 pr-4">Kilo</th>
+                                            <th class="py-3 pr-4">Birim Fiyat</th>
+                                            <th class="py-3 pr-4">Toplam</th>
+                                            <th class="py-3 pr-4">Tahsil Edilen</th>
+                                            <th class="py-3 pr-4">Kalan</th>
+                                            <th class="py-3 pr-4">Durum</th>
+                                            <th class="py-3 pr-4">İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="entryTableBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 p-4">
+        <div class="mx-auto mt-8 w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Kayıt Düzenle</h3>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Kayıt bilgilerini güncelleyin.
+                    </p>
+                </div>
+
+                <button id="closeModalBtn" type="button"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                    ✕
+                </button>
+            </div>
+
+            <form id="editForm" class="px-5 py-5">
+                <input id="editId" type="hidden" />
+
+                <div id="editWarningBox"
+                    class="mb-4 hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <fieldset class="d360-field relative">
+                        <legend>Satıcı</legend>
+
+                        <input id="editSellerSearch" type="text" class="d360-input" placeholder="Satıcı adı yazın"
+                            autocomplete="off" />
+
+                        <input id="editSellerId" type="hidden" />
+
+                        <div id="editSellerDropdown"
+                            class="absolute left-0 right-0 top-[calc(100%+8px)] z-30 hidden max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="d360-field">
+                        <legend>Alıcı</legend>
+                        <select id="editBuyerId" class="d360-select">
+                            <option value="">Seçiniz</option>
+                        </select>
+                    </fieldset>
+
+                    <fieldset class="d360-field">
+                        <legend>Ürün</legend>
+                        <select id="editProductId" class="d360-select">
+                            <option value="">Seçiniz</option>
+                        </select>
+                    </fieldset>
+
+                    <fieldset class="d360-field">
+                        <legend>Tarih</legend>
+                        <input id="editEntryDate" type="date" class="d360-input" />
+                    </fieldset>
+
+                    <fieldset class="d360-field">
+                        <legend>Kasa</legend>
+                        <input id="editBoxCount" type="number" min="0" class="d360-input" />
+                    </fieldset>
+
+                    <fieldset class="d360-field">
+                        <legend>Kilo</legend>
+                        <input id="editNetWeight" type="number" min="0" step="0.01" class="d360-input" />
+                    </fieldset>
+
+                    <fieldset class="d360-field md:col-span-2">
+                        <legend>Birim Fiyat</legend>
+                        <input id="editUnitPrice" type="number" min="0" step="0.01" class="d360-input" />
+                    </fieldset>
+
+                    <fieldset class="d360-field md:col-span-2">
+                        <legend>Not</legend>
+                        <textarea id="editNote" rows="4" class="d360-textarea" placeholder="Açıklama"></textarea>
+                    </fieldset>
+                </div>
+
+                <div class="mt-5 flex flex-wrap justify-end gap-2">
+                    <button id="cancelEditBtn" type="button"
+                        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Vazgeç
+                    </button>
+
+                    <button type="submit"
+                        class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 p-4">
+        <div class="mx-auto mt-8 w-full max-w-xl rounded-2xl bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Tahsilat Al</h3>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Seçilen kayda tahsilat ekleyin.
+                    </p>
+                </div>
+
+                <button id="closePaymentModalBtn" type="button"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                    ✕
+                </button>
+            </div>
+
+            <form id="paymentForm" class="px-5 py-5">
+                <input id="paymentEntryId" type="hidden" />
+
+                <div class="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-sm text-slate-500">Seçilen kayıt</p>
+                    <p id="paymentRecordInfo" class="mt-1 font-semibold text-slate-900"></p>
+                    <p id="paymentRemainingInfo" class="mt-1 text-sm text-slate-600"></p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <fieldset class="d360-field">
+                        <legend>Ödeme Yöntemi</legend>
+                        <select id="paymentMethod" class="d360-select">
+                            <option value="cash">Nakit</option>
+                            <option value="bank">Banka</option>
+                            <option value="card">Kart</option>
+                        </select>
+                    </fieldset>
+
+                    <fieldset class="d360-field">
+                        <legend>Ödeme Tarihi</legend>
+                        <input id="paymentDate" type="date" class="d360-input" />
+                    </fieldset>
+
+                    <fieldset class="d360-field">
+                        <legend>Tutar</legend>
+                        <input id="paymentAmount" type="number" step="0.01" min="0" class="d360-input"
+                            placeholder="Örn. 1500" />
+                    </fieldset>
+
+                    <fieldset class="d360-field md:col-span-3">
+                        <legend>Açıklama</legend>
+                        <textarea id="paymentNote" rows="3" class="d360-textarea"
+                            placeholder="Tahsilat açıklaması"></textarea>
+                    </fieldset>
+                </div>
+
+                <div class="mt-5 flex flex-wrap justify-end gap-2">
+                    <button id="cancelPaymentBtn" type="button"
+                        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Vazgeç
+                    </button>
+
+                    <button id="savePaymentBtn" type="submit"
+                        class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50">
+                        Tahsilat Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+    <script src="/assets/js/pages/ledger-entries.js"></script>
+</body>
+
+</html>

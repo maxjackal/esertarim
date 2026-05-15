@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Defter Detayı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body data-page-title="Defter Detayı" class="bg-slate-50 text-slate-800">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+
+            <main class="app-main">
+                <div id="topbarMount"></div>
+
+                <div class="app-content">
+                    <div class="max-w-7xl mx-auto px-4 py-6">
+                        <div class="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                                <h1 class="text-2xl font-bold text-slate-900">Defter Detayı</h1>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Bu deftere ait tüm kayıtları ve toplam özet bilgilerini görüntüleyin.
+                                </p>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <a href="/pages/ledgers.html"
+                                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                    Listeye Dön
+                                </a>
+
+                                <button type="button" id="exportCsvBtn"
+                                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                    CSV İndir
+                                </button>
+
+                                <button type="button" id="exportExcelBtn"
+                                    class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                                    Excel İndir
+                                </button>
+                            </div>
+                        </div>
+
+                        <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-900">Defter Özeti</h2>
+                                    <p class="mt-1 text-sm text-slate-500">
+                                        Alıcı, ürün ve toplu borç/alacak özetleri
+                                    </p>
+                                </div>
+
+                                <div class="flex flex-wrap gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <label for="fromDate"
+                                            class="text-sm font-medium text-slate-600">Başlangıç</label>
+                                        <input id="fromDate" type="date"
+                                            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400" />
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        <label for="toDate" class="text-sm font-medium text-slate-600">Bitiş</label>
+                                        <input id="toDate" type="date"
+                                            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400" />
+                                    </div>
+
+                                    <button type="button" id="filterBtn"
+                                        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                        Filtrele
+                                    </button>
+
+                                    <button type="button" id="clearFilterBtn"
+                                        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                        Temizle
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Alıcı</p>
+                                    <p id="summaryBuyerName" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Ürün</p>
+                                    <p id="summaryProductName" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Kayıt Sayısı
+                                    </p>
+                                    <p id="summaryEntryCount" class="mt-2 text-base font-bold text-slate-900">0</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Toplam Kasa
+                                    </p>
+                                    <p id="summaryTotalBoxes" class="mt-2 text-base font-bold text-slate-900">0</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Toplam Kilo
+                                    </p>
+                                    <p id="summaryTotalWeight" class="mt-2 text-base font-bold text-slate-900">0</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Toplam Tutar
+                                    </p>
+                                    <p id="summaryTotalAmount" class="mt-2 text-base font-bold text-slate-900">₺0,00</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Toplam
+                                        Ödenen</p>
+                                    <p id="summaryTotalPaid" class="mt-2 text-base font-bold text-emerald-700">₺0,00</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Toplam Kalan
+                                    </p>
+                                    <p id="summaryTotalRemaining" class="mt-2 text-base font-bold text-rose-700">₺0,00
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="mb-4">
+                                <h2 class="text-lg font-bold text-slate-900">Defter Kayıtları</h2>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Seçili deftere ait tüm hareketler aşağıda listelenir.
+                                </p>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 text-left text-slate-500">
+                                            <th class="py-3 pr-4">Tarih</th>
+                                            <th class="py-3 pr-4">Satıcı</th>
+                                            <th class="py-3 pr-4">Kasa</th>
+                                            <th class="py-3 pr-4">Net Kilo</th>
+                                            <th class="py-3 pr-4">Ort. Kasa</th>
+                                            <th class="py-3 pr-4">Birim Fiyat</th>
+                                            <th class="py-3 pr-4">Toplam</th>
+                                            <th class="py-3 pr-4">Ödenen</th>
+                                            <th class="py-3 pr-4">Kalan</th>
+                                            <th class="py-3 pr-4">Durum</th>
+                                            <th class="py-3 pr-4">Uyarı</th>
+                                            <th class="py-3 pr-4">Not</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ledgerItemsTableBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+    <script src="/assets/js/pages/ledger-details.js"></script>
+</body>
+
+</html>

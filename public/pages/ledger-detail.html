@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Defter Kayıt Detayı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body data-page-title="Defter Kayıt Detayı" class="bg-slate-50 text-slate-800">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+
+            <main class="app-main">
+                <div id="topbarMount"></div>
+
+                <div class="app-content">
+                    <div class="max-w-7xl mx-auto px-4 py-6">
+                        <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h1 class="text-2xl font-bold text-slate-900">Defter Kayıt Detayı</h1>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Kayıt bilgilerini, ödeme özetini ve tahsilat hareketlerini görüntüleyin.
+                                </p>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <a href="/pages/ledger_entries.html"
+                                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                    Listeye Dön
+                                </a>
+                            </div>
+                        </div>
+
+                        <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="mb-4">
+                                <h2 class="text-lg font-bold text-slate-900">Kayıt Bilgileri</h2>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tarih</p>
+                                    <p id="detailEntryDate" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Satıcı</p>
+                                    <p id="detailSellerName" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Alıcı</p>
+                                    <p id="detailBuyerName" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Ürün</p>
+                                    <p id="detailProductName" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Kasa</p>
+                                    <p id="detailBoxCount" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Kilo</p>
+                                    <p id="detailNetWeight" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Birim Fiyat
+                                    </p>
+                                    <p id="detailUnitPrice" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Durum</p>
+                                    <p id="detailPaymentStatus" class="mt-2 text-base font-bold text-slate-900">-</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-sm text-slate-500">Toplam Tutar</p>
+                                    <p id="detailTotalAmount" class="mt-2 text-2xl font-bold text-slate-900">₺0,00</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-sm text-slate-500">Tahsil Edilen</p>
+                                    <p id="detailPaidAmount" class="mt-2 text-2xl font-bold text-emerald-600">₺0,00</p>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-sm text-slate-500">Kalan</p>
+                                    <p id="detailRemainingAmount" class="mt-2 text-2xl font-bold text-rose-600">₺0,00
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Not</p>
+                                    <p id="detailNote" class="mt-2 whitespace-pre-line text-sm text-slate-700">-</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="mb-4">
+                                <h2 class="text-lg font-bold text-slate-900">Yeni Tahsilat Ekle</h2>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Tahsilatlar artık hareket olarak eklenir. Kayıt üzerindeki ödeme bilgisi buradan
+                                    oluşur.
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <fieldset class="d360-field">
+                                    <legend>Ödeme Yöntemi</legend>
+                                    <select id="paymentMethod" class="d360-select">
+                                        <option value="cash">Nakit</option>
+                                        <option value="bank">Banka</option>
+                                        <option value="card">Kart</option>
+                                    </select>
+                                </fieldset>
+                                <fieldset class="d360-field">
+                                    <legend>Ödeme Tarihi</legend>
+                                    <input id="paymentDate" type="date" class="d360-input" />
+                                </fieldset>
+
+                                <fieldset class="d360-field">
+                                    <legend>Tutar</legend>
+                                    <input id="paymentAmount" type="number" step="0.01" min="0" class="d360-input"
+                                        placeholder="Örn. 1500" />
+                                </fieldset>
+
+                                <fieldset class="d360-field md:col-span-3">
+                                    <legend>Açıklama</legend>
+                                    <textarea id="paymentNote" rows="3" class="d360-textarea"
+                                        placeholder="Tahsilat açıklaması"></textarea>
+                                </fieldset>
+                            </div>
+
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                <button id="savePaymentBtn"
+                                    class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50">
+                                    Tahsilat Kaydet
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="mb-4 flex items-center justify-between gap-3">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-900">Tahsilat Hareketleri</h2>
+                                    <p class="mt-1 text-sm text-slate-500">
+                                        Bu kayda ait tüm ödeme geçmişi aşağıda listelenir.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-left text-slate-500">
+                                    <th class="py-3 pr-4">Tarih</th>
+                                    <th class="py-3 pr-4">Tutar</th>
+                                    <th class="py-3 pr-4">Yöntem</th>
+                                    <th class="py-3 pr-4">Açıklama</th>
+                                    <th class="py-3 pr-4">İşlem Yapan</th>
+                                    <th class="py-3 pr-4">Oluşturulma</th>
+                                    <th class="py-3 pr-4">İşlem</th>
+                                </tr>
+                            </thead>
+                                    <tbody id="paymentTableBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+    <script src="/assets/js/pages/ledger-detail.js"></script>
+</body>
+
+</html>

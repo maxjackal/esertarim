@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eser Tarım | Giriş</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100">
+    <div class="relative min-h-screen overflow-hidden">
+        <div class="absolute inset-0">
+            <div class="absolute -left-20 top-0 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"></div>
+            <div class="absolute right-0 top-20 h-80 w-80 rounded-full bg-lime-400/10 blur-3xl"></div>
+            <div class="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-emerald-300/10 blur-3xl"></div>
+        </div>
+
+        <div class="relative z-10 grid min-h-screen grid-cols-1 lg:grid-cols-2">
+            <section
+                class="hidden lg:flex flex-col justify-between border-r border-white/10 bg-white/5 p-10 backdrop-blur-xl">
+                <div>
+                    <div
+                        class="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3">
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-lg font-extrabold text-white shadow-lg shadow-emerald-500/30">
+                            ET
+                        </div>
+                        <div>
+                            <p class="text-lg font-bold tracking-wide text-white">Eser Tarım</p>
+                            <p class="text-sm text-slate-300">Hal Takip ve Yönetim Sistemi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="max-w-xl">
+                    <p class="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-emerald-300">
+                        Tarım Ticaret Yönetimi
+                    </p>
+                    <h1 class="text-4xl font-black leading-tight text-white xl:text-5xl">
+                        Alım, satış, tahsilat ve defter süreçlerinizi tek ekranda yönetin.
+                    </h1>
+                    <p class="mt-6 max-w-lg text-base leading-7 text-slate-300">
+                        Eser Tarım için özel hazırlanan bu panel ile ürün, satıcı, alıcı, açık alacak ve tahsilat
+                        süreçlerini düzenli ve güvenli şekilde takip edin.
+                    </p>
+
+                    <div class="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p class="text-2xl font-bold text-white">Kolay</p>
+                            <p class="mt-1 text-sm text-slate-300">Hızlı kayıt ve pratik kullanım</p>
+                        </div>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p class="text-2xl font-bold text-white">Güvenli</p>
+                            <p class="mt-1 text-sm text-slate-300">Düzenli veri ve kontrol akışı</p>
+                        </div>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <p class="text-2xl font-bold text-white">Güçlü</p>
+                            <p class="mt-1 text-sm text-slate-300">Raporlama ve tahsilat yönetimi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-sm text-slate-400">
+                    © 2026 Eser Tarım. Tüm hakları saklıdır.
+                </div>
+            </section>
+
+            <section class="flex items-center justify-center p-6 sm:p-10">
+                <div class="w-full max-w-md">
+                    <div class="mb-8 text-center lg:hidden">
+                        <div
+                            class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-500 text-xl font-extrabold text-white shadow-lg shadow-emerald-500/30">
+                            ET
+                        </div>
+                        <h1 class="mt-4 text-2xl font-black text-white">Eser Tarım</h1>
+                        <p class="mt-2 text-sm text-slate-400">Hal Takip ve Yönetim Sistemi</p>
+                    </div>
+
+                    <div class="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-black text-white">Yönetim Paneli Girişi</h2>
+                            <p class="mt-2 text-sm text-slate-300">
+                                Hesabınıza giriş yaparak sisteme erişin.
+                            </p>
+                        </div>
+
+                        <form id="loginForm" class="space-y-5">
+                            <div>
+<label class="mb-2 block text-sm font-semibold text-slate-200">
+    E-posta
+</label>
+<input id="email" type="email" placeholder="ornek@esertarim.com"
+    class="w-full rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-white" />
+                            </div>
+
+                            <div>
+                                <div class="mb-2 flex items-center justify-between">
+                                    <label for="password" class="block text-sm font-semibold text-slate-200">
+                                        Şifre
+                                    </label>
+                                    <a href="#" class="text-xs font-semibold text-emerald-300 hover:text-emerald-200">
+                                        Şifremi Unuttum
+                                    </a>
+                                </div>
+
+                                <div class="relative">
+                                    <input id="password" name="password" type="password" autocomplete="current-password"
+                                        placeholder="Şifrenizi girin"
+                                        class="w-full rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/15" />
+                                    <button type="button" id="togglePassword"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl px-2 py-1 text-xs font-semibold text-slate-300 hover:bg-white/10 hover:text-white">
+                                        Göster
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-3">
+                                <label class="flex items-center gap-3 text-sm text-slate-300">
+                                    <input type="checkbox"
+                                        class="h-4 w-4 rounded border-white/20 bg-slate-900/60 text-emerald-500 focus:ring-emerald-400" />
+                                    Beni hatırla
+                                </label>
+
+                                <span
+                                    class="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                                    Güvenli Giriş
+                                </span>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full rounded-2xl bg-emerald-500 px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:-translate-y-0.5 hover:bg-emerald-400">
+                                Giriş Yap
+                            </button>
+                        </form>
+
+                        <div id="loginMessage" class="mt-4 hidden rounded-2xl border px-4 py-3 text-sm"></div>
+
+                        <div class="mt-6 border-t border-white/10 pt-5 text-center">
+                            <p class="text-xs leading-6 text-slate-400">
+                                Eser Tarım yönetim paneline sadece yetkili kullanıcılar erişebilir.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const form = document.getElementById("loginForm");
+            const email = document.getElementById("email");
+            const password = document.getElementById("password");
+            const togglePassword = document.getElementById("togglePassword");
+            const loginMessage = document.getElementById("loginMessage");
+
+            function showMessage(type, text) {
+                loginMessage.classList.remove("hidden", "border-red-400/20", "bg-red-400/10", "text-red-200", "border-emerald-400/20", "bg-emerald-400/10", "text-emerald-100");
+
+                if (type === "error") {
+                    loginMessage.classList.add("border-red-400/20", "bg-red-400/10", "text-red-200");
+                } else {
+                    loginMessage.classList.add("border-emerald-400/20", "bg-emerald-400/10", "text-emerald-100");
+                }
+
+                loginMessage.textContent = text;
+            }
+
+            togglePassword.addEventListener("click", () => {
+                const isPassword = password.type === "password";
+                password.type = isPassword ? "text" : "password";
+                togglePassword.textContent = isPassword ? "Gizle" : "Göster";
+            });
+            const emailInput = document.getElementById("email");
+
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const emailVal = emailInput.value.trim();
+                const passVal = password.value;
+
+                if (!emailVal || !passVal) {
+                    showMessage("error", "E-posta ve şifre girin.");
+                    return;
+                }
+
+                try {
+                    const { data, error } = await window.sb.auth.signInWithPassword({
+                        email: emailVal,
+                        password: passVal
+                    });
+
+                    if (error) {
+                        throw new Error(error.message || "Giriş başarısız");
+                    }
+
+                    showMessage("success", "Giriş başarılı, yönlendiriliyorsunuz...");
+
+                    // Supabase onAuthStateChange automatically handles redirect,
+                    // but we can also manually redirect here as fallback
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 800);
+
+                } catch (err) {
+                    showMessage("error", err.message);
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>

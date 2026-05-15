@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tahsilatlar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body data-page-title="Tahsilatlar">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+
+            <main class="app-main">
+                <div id="topbarMount"></div>
+
+                <div class="app-content">
+                    <div class="flex items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h1 class="text-2xl font-bold">Tahsilatlar</h1>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Kalan borçları görüntüleyin ve ödeme işleyin.
+                            </p>
+                        </div>
+                    </div>
+
+                    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
+                            <fieldset class="d360-field">
+                                <legend>Başlangıç</legend>
+                                <input id="fromDate" type="date" class="d360-input" />
+                            </fieldset>
+
+                            <fieldset class="d360-field">
+                                <legend>Bitiş</legend>
+                                <input id="toDate" type="date" class="d360-input" />
+                            </fieldset>
+
+                        <fieldset class="d360-field relative">
+                            <legend>Satıcı</legend>
+                        
+                            <input id="sellerSearch" type="text" class="d360-input" placeholder="Satıcı adı yazın" autocomplete="off" />
+                        
+                            <input id="sellerId" type="hidden" />
+                        
+                            <div id="sellerDropdown"
+                                class="absolute left-0 right-0 top-[calc(100%+8px)] z-30 hidden max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                            </div>
+                        </fieldset>
+
+                            <fieldset class="d360-field">
+                                <legend>Alıcı</legend>
+                                <select id="buyerFilter" class="d360-select">
+                                    <option value="">Tümü</option>
+                                </select>
+                            </fieldset>
+
+                            <fieldset class="d360-field">
+                                <legend>Ürün</legend>
+                                <select id="productFilter" class="d360-select">
+                                    <option value="">Tümü</option>
+                                </select>
+                            </fieldset>
+
+                            <fieldset class="d360-field">
+                                <legend>Ödeme Durumu</legend>
+                                <select id="paymentStatusFilter" class="d360-select">
+                                    <option value="">Tümü</option>
+                                    <option value="odenmedi">Ödenecek</option>
+                                    <option value="kismi_odendi">Kısmi Ödendi</option>
+                                    <option value="odendi">Ödendi</option>
+                                </select>
+                            </fieldset>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-4 mt-4">
+                            <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                                <input id="onlyOpen" type="checkbox" checked />
+                                Sadece açık borçlar
+                            </label>
+
+                            <button id="filterBtn"
+                                class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                                Filtrele
+                            </button>
+
+                            <button id="clearBtn"
+                                class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                Temizle
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-left text-slate-500">
+                                        <th class="py-3 pr-4">Tarih</th>
+                                        <th class="py-3 pr-4">Satıcı</th>
+                                        <th class="py-3 pr-4">Alıcı</th>
+                                        <th class="py-3 pr-4">Ürün</th>
+                                        <th class="py-3 pr-4">Toplam</th>
+                                        <th class="py-3 pr-4">Ödenen</th>
+                                        <th class="py-3 pr-4">Kalan</th>
+                                        <th class="py-3 pr-4">Durum</th>
+                                        <th class="py-3 pr-4">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="collectionsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 p-4">
+        <div class="min-h-full flex items-center justify-center">
+            <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-slate-200">
+                <div class="flex items-center justify-between p-5 border-b border-slate-200">
+                    <h3 class="text-lg font-semibold">Ödeme Ekle</h3>
+                    <button id="closePaymentModalBtn" class="text-slate-500 hover:text-slate-800"
+                        type="button">✕</button>
+                </div>
+
+                <div class="p-5">
+                    <div class="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 mb-4">
+                        <p class="text-sm text-slate-600">Seçilen kayıt</p>
+                        <p id="paymentRecordInfo" class="mt-1 font-semibold text-slate-900"></p>
+                        <p id="paymentRemainingInfo" class="mt-1 text-sm text-slate-600"></p>
+                    </div>
+
+                    <form id="paymentForm" class="space-y-4">
+                        <input type="hidden" id="paymentEntryId" />
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <fieldset class="d360-field">
+                                            <legend>Ödeme Yöntemi</legend>
+                                            <select id="paymentMethod" class="d360-select">
+                                                <option value="cash">Nakit</option>
+                                                <option value="bank">Banka</option>
+                                                <option value="card">Kart</option>
+                                            </select>
+                                        </fieldset>
+                                    
+                                        <fieldset class="d360-field">
+                                            <legend>Ödeme Tarihi</legend>
+                                            <input id="paymentDate" type="date" class="d360-input" />
+                                        </fieldset>
+                                    
+                                        <fieldset class="d360-field">
+                                            <legend>Tutar</legend>
+                                            <input id="paymentAmount" type="number" step="0.01" min="0" class="d360-input" placeholder="Örn. 1500" />
+                                        </fieldset>
+                                    
+                                        <fieldset class="d360-field md:col-span-3">
+                                            <legend>Açıklama</legend>
+                                            <textarea id="paymentNote" rows="3" class="d360-textarea" placeholder="Tahsilat açıklaması"></textarea>
+                                        </fieldset>
+                                    </div>
+
+                        <div class="flex items-center justify-end gap-3">
+                            <button type="button" id="cancelPaymentBtn"
+                                class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                Vazgeç
+                            </button>
+                            <button type="submit"
+                                class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                                Ödemeyi Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+    <script src="/assets/js/pages/collections.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alıcılar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body data-page-title="Alıcılar" class="bg-slate-50 text-slate-800">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+                <main class="app-main">
+                    <div id="topbarMount"></div>
+                    <div class="app-content">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold">Alıcılar</h1>
+                <p class="text-sm text-slate-500 mt-1">Ürünün işlendiği kişi veya firmaları yönetin.</p>
+            </div>
+        
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <h2 class="text-lg font-semibold mb-4">Yeni Alıcı</h2>
+        
+                    <form id="buyerForm" class="space-y-4">
+                        <fieldset class="d360-field">
+                            <legend>Ad / Firma Adı</legend>
+                            <input id="name" class="d360-input" placeholder="Örn: Akın Ticaret" />
+                        </fieldset>
+        
+                        <fieldset class="d360-field">
+                            <legend>Telefon</legend>
+                            <input id="phone" class="d360-input" placeholder="Örn: 0555..." />
+                        </fieldset>
+        
+                        <fieldset class="d360-field">
+                            <legend>Plaka</legend>
+                            <input id="plateNo" class="d360-input" placeholder="Örn: 55 ABC 123" />
+                        </fieldset>
+        
+                        <button class="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                            Kaydet
+                        </button>
+                    </form>
+                </section>
+        
+                <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <h2 class="text-lg font-semibold mb-4">Alıcı Listesi</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-left text-slate-500">
+                                    <th class="py-3 pr-4">Ad / Firma</th>
+                                    <th class="py-3 pr-4">Plaka</th>
+                                    <th class="py-3 pr-4">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="buyerTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+                  
+                </main>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/assets/js/pages/buyers.js"></script>
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+    
+</body>
+
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body data-page-title="Dashboard" class="bg-slate-50 text-slate-800">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+
+            <main class="app-main">
+                <div id="topbarMount"></div>
+
+                <div class="app-content">
+                    <div class="mx-auto max-w-7xl px-4 py-6">
+                        <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Günlük işlem, tahsilat ve açık alacak özetini görüntüleyin.
+                                </p>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <fieldset class="d360-field min-w-[220px]">
+                                    <legend>Tarih</legend>
+                                    <input id="dashboardDate" type="date" class="d360-input" />
+                                </fieldset>
+
+                                <button id="filterBtn"
+                                    class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                                    Göster
+                                </button>
+                            </div>
+                        </div>
+
+                        <section class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <p class="text-sm text-slate-500">Günlük Kayıt</p>
+                                <p id="entryCount" class="mt-2 text-3xl font-bold text-slate-900">0</p>
+                            </div>
+
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <p class="text-sm text-slate-500">Günlük Toplam Tutar</p>
+                                <p id="totalAmount" class="mt-2 text-3xl font-bold text-slate-900">0 ₺</p>
+                            </div>
+
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <p class="text-sm text-slate-500">Günlük Tahsilat</p>
+                                <p id="todayCollection" class="mt-2 text-3xl font-bold text-emerald-600">0 ₺</p>
+                            </div>
+
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <p class="text-sm text-slate-500">Toplam Açık Alacak</p>
+                                <p id="openReceivables" class="mt-2 text-3xl font-bold text-rose-600">0 ₺</p>
+                            </div>
+                        </section>
+
+                        <section class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <p class="text-sm text-slate-500">Toplam Kasa</p>
+                                <p id="totalBoxes" class="mt-2 text-2xl font-bold text-slate-900">0</p>
+                            </div>
+
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <p class="text-sm text-slate-500">Toplam Kilo</p>
+                                <p id="totalWeight" class="mt-2 text-2xl font-bold text-slate-900">0 kg</p>
+                            </div>
+
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <p class="text-sm text-slate-500">Günlük Kalan</p>
+                                <p id="totalRemaining" class="mt-2 text-2xl font-bold text-amber-600">0 ₺</p>
+                            </div>
+                        </section>
+
+                        <section class="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <div class="mb-4">
+                                    <h2 class="text-lg font-bold text-slate-900">En Çok İşlem Gören Ürünler</h2>
+                                    <p class="mt-1 text-sm text-slate-500">
+                                        Seçilen tarihte işlem hacmi öne çıkan ürünler.
+                                    </p>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm">
+                                        <thead>
+                                            <tr class="border-b border-slate-200 text-left text-slate-500">
+                                                <th class="py-3 pr-4">Ürün</th>
+                                                <th class="py-3 pr-4">Kayıt</th>
+                                                <th class="py-3 pr-4">Kasa</th>
+                                                <th class="py-3 pr-4">Kilo</th>
+                                                <th class="py-3 pr-4">Tutar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topProductsBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <div class="mb-4">
+                                    <h2 class="text-lg font-bold text-slate-900">En Çok İşlem Yapan Satıcılar</h2>
+                                    <p class="mt-1 text-sm text-slate-500">
+                                        Seçilen tarihte hareketi yüksek satıcılar.
+                                    </p>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm">
+                                        <thead>
+                                            <tr class="border-b border-slate-200 text-left text-slate-500">
+                                                <th class="py-3 pr-4">Satıcı</th>
+                                                <th class="py-3 pr-4">Kayıt</th>
+                                                <th class="py-3 pr-4">Kilo</th>
+                                                <th class="py-3 pr-4">Tutar</th>
+                                                <th class="py-3 pr-4">Kalan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topSellersBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="mb-4">
+                                <h2 class="text-lg font-bold text-slate-900">En Borçlu Alıcılar</h2>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Açık bakiyesi en yüksek ilk alıcılar.
+                                </p>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 text-left text-slate-500">
+                                            <th class="py-3 pr-4">Alıcı</th>
+                                            <th class="py-3 pr-4">Açık Bakiye</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topDebtorsBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="mb-4">
+                                <h2 class="text-lg font-bold text-slate-900">Son Kayıtlar</h2>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Seçilen tarihte girilen son hareketler.
+                                </p>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 text-left text-slate-500">
+                                            <th class="py-3 pr-4">Tarih</th>
+                                            <th class="py-3 pr-4">Satıcı</th>
+                                            <th class="py-3 pr-4">Alıcı</th>
+                                            <th class="py-3 pr-4">Ürün</th>
+                                            <th class="py-3 pr-4">Kasa</th>
+                                            <th class="py-3 pr-4">Kilo</th>
+                                            <th class="py-3 pr-4">Tutar</th>
+                                            <th class="py-3 pr-4">Kalan</th>
+                                            <th class="py-3 pr-4">İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentEntriesBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+    <script src="/assets/js/pages/dashboard.js"></script>
+</body>
+
+</html>

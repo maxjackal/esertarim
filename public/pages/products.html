@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ürünler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body data-page-title="Ürünler" class="bg-slate-50 text-slate-800">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+                <main class="app-main">
+                    <div id="topbarMount"></div>
+                    <div class="app-content">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="flex items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold">Ürünler</h1>
+                    <p class="text-sm text-slate-500 mt-1">Ürün adı ve min-max kasa kilo bilgilerini yönetin.</p>
+                </div>
+            </div>
+        
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <h2 class="text-lg font-semibold mb-4">Yeni Ürün</h2>
+        
+                    <form id="productForm" class="space-y-4">
+                        <fieldset class="d360-field">
+                            <legend>Ürün Adı</legend>
+                            <input id="name" class="d360-input" placeholder="Örn: Armut" />
+                        </fieldset>
+        
+                        <fieldset class="d360-field">
+                            <legend>Min Kasa Kilosu</legend>
+                            <input id="minWeight" type="number" step="0.01" class="d360-input" placeholder="Örn: 13" />
+                        </fieldset>
+        
+                        <fieldset class="d360-field">
+                            <legend>Max Kasa Kilosu</legend>
+                            <input id="maxWeight" type="number" step="0.01" class="d360-input" placeholder="Örn: 19" />
+                        </fieldset>
+        
+                        <button class="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                            Kaydet
+                        </button>
+                    </form>
+                </section>
+        
+                <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <h2 class="text-lg font-semibold mb-4">Ürün Listesi</h2>
+        
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-left text-slate-500">
+                                    <th class="py-3 pr-4">Ürün</th>
+                                    <th class="py-3 pr-4">Min</th>
+                                    <th class="py-3 pr-4">Max</th>
+                                    <th class="py-3 pr-4">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+                   
+                </main>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/assets/js/pages/product.js"></script>
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+    
+</body>
+
+</html>

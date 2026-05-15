@@ -1,0 +1,404 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.app-shell {
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.app-sidebar-wrap {
+    width: 280px;
+    flex: 0 0 280px;
+    transition: width 0.2s ease, flex-basis 0.2s ease;
+}
+
+body.sidebar-collapsed .app-sidebar-wrap {
+    width: 92px;
+    flex-basis: 92px;
+}
+
+.app-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.app-content {
+    padding: 24px;
+}
+
+.app-sidebar {
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    background: #0f172a;
+    color: white;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.app-sidebar__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.app-sidebar__logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
+.app-sidebar__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.app-sidebar__subtitle {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.app-sidebar__divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.app-sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.app-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 14px;
+    transition: 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.app-nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+}
+
+.app-nav-link.is-active {
+    background: white;
+    color: #0f172a;
+}
+
+.app-nav-link__icon {
+    width: 22px;
+    text-align: center;
+    flex: 0 0 22px;
+}
+
+body.sidebar-collapsed .app-sidebar__title,
+body.sidebar-collapsed .app-sidebar__subtitle,
+body.sidebar-collapsed .app-nav-link span:last-child {
+    display: none;
+}
+
+body.sidebar-collapsed .app-sidebar__brand {
+    justify-content: center;
+}
+
+body.sidebar-collapsed .app-nav-link {
+    justify-content: center;
+}
+
+.app-topbar {
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.app-topbar__left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.app-topbar__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.app-topbar__subtitle {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.app-topbar__right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.app-icon-btn,
+.app-primary-btn {
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.app-icon-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: #0f172a;
+    font-size: 18px;
+}
+
+.app-icon-btn:hover {
+    background: #e2e8f0;
+}
+
+.app-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f172a;
+    color: white;
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.app-primary-btn:hover {
+    background: #1e293b;
+}
+
+.toast-root {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast-item {
+    min-width: 280px;
+    max-width: 360px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #0f172a;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    padding: 14px 14px 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: all 0.25s ease;
+}
+
+.toast-item--show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-item--hide {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.toast-success {
+    border-left-color: #16a34a;
+}
+
+.toast-error {
+    border-left-color: #dc2626;
+}
+
+.toast-warning {
+    border-left-color: #d97706;
+}
+
+.toast-item__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.toast-item__close {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #64748b;
+    font-size: 18px;
+    line-height: 1;
+}
+
+@media (max-width: 960px) {
+    .app-layout {
+        flex-direction: column;
+    }
+
+    .app-sidebar-wrap,
+    body.sidebar-collapsed .app-sidebar-wrap {
+        width: 100%;
+        flex-basis: auto;
+    }
+
+    .app-sidebar {
+        height: auto;
+        position: relative;
+    }
+
+    body.sidebar-collapsed .app-sidebar__title,
+    body.sidebar-collapsed .app-sidebar__subtitle,
+    body.sidebar-collapsed .app-nav-link span:last-child {
+        display: initial;
+    }
+
+    body.sidebar-collapsed .app-sidebar__brand,
+    body.sidebar-collapsed .app-nav-link {
+        justify-content: initial;
+    }
+
+    .app-content {
+        padding: 16px;
+    }
+
+    .app-topbar {
+        padding: 14px 16px;
+    }
+}
+.d360-field {
+    border: 1px solid #dbe3ee;
+    border-radius: 14px;
+    padding: 10px 12px 12px;
+    background: #fff;
+}
+
+.d360-field legend {
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.d360-input,
+.d360-select,
+.d360-textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #0f172a;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.d360-input::placeholder,
+.d360-textarea::placeholder {
+    color: #94a3b8;
+}
+
+.d360-help {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+@media print {
+    body {
+        background: #fff !important;
+    }
+
+    button,
+    a,
+    select,
+    input {
+        visibility: hidden !important;
+    }
+
+    table,
+    table *,
+    h1,
+    p,
+    section,
+    div {
+        visibility: visible !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}
+
+
+.app-sidebar__section-title {
+    padding: 4px 12px 2px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.app-sidebar__logo {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #fff;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+}
+
+.app-nav-link--danger {
+    color: #fca5a5;
+}
+
+.app-nav-link--danger:hover {
+    background: rgba(239, 68, 68, 0.10);
+    color: #fecaca;
+}

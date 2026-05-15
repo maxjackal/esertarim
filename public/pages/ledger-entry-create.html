@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ürün Kaydı Ekle</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+</head>
+
+<body data-page-title="Ürün Kaydı Ekle" class="bg-slate-50 text-slate-800">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+
+            <main class="app-main">
+                <div id="topbarMount"></div>
+
+                <div class="app-content">
+                    <div class="max-w-7xl mx-auto px-4 py-6">
+                        <div class="mb-6">
+                            <h1 class="text-2xl font-bold tracking-tight">Ürün Kaydı Ekle</h1>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Satıcıdan gelen ürünü ilgili alıcı ve ürüne göre deftere işleyin.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                            <section class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                                <form id="entryForm" class="space-y-5">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <fieldset class="d360-field relative">
+                                            <legend>Satıcı</legend>
+
+                                            <input id="sellerSearch" type="text" class="d360-input"
+                                                placeholder="Satıcı adı yazın" autocomplete="off" />
+
+                                            <input id="sellerId" type="hidden" />
+
+                                            <div id="sellerDropdown"
+                                                class="absolute left-0 right-0 top-[calc(100%+8px)] z-30 hidden max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="d360-field">
+                                            <legend>Alıcı</legend>
+                                            <select id="buyerId" class="d360-select" required>
+                                                <option value="">Alıcı seçiniz</option>
+                                            </select>
+                                            <p class="d360-help">Defterin bağlı olacağı alıcı.</p>
+                                        </fieldset>
+
+                                        <fieldset class="d360-field">
+                                            <legend>Ürün</legend>
+                                            <select id="productId" class="d360-select" required>
+                                                <option value="">Ürün seçiniz</option>
+                                            </select>
+                                            <p id="productRangeInfo" class="d360-help">Ürün seçince min-max bilgisi
+                                                burada görünür.</p>
+                                        </fieldset>
+
+                                        <fieldset class="d360-field">
+                                            <legend>Tarih</legend>
+                                            <input id="entryDate" type="date" class="d360-input" required />
+                                            <p class="d360-help">İşlemin yapıldığı tarih.</p>
+                                        </fieldset>
+
+                                        <fieldset class="d360-field">
+                                            <legend>Kasa Adedi</legend>
+                                            <input id="boxCount" type="number" min="1" step="1" class="d360-input"
+                                                placeholder="Örn: 12" required />
+                                            <p class="d360-help">Toplam kasa sayısı.</p>
+                                        </fieldset>
+
+                                        <fieldset class="d360-field">
+                                            <legend>Net Kilo</legend>
+                                            <input id="netWeight" type="number" min="0" step="0.01" class="d360-input"
+                                                placeholder="Örn: 156.50" required />
+                                            <p class="d360-help">Toplam net kilo.</p>
+                                        </fieldset>
+
+                                        <fieldset class="d360-field">
+                                            <legend>Birim Fiyat</legend>
+                                            <input id="unitPrice" type="number" min="0" step="0.01" class="d360-input"
+                                                placeholder="Örn: 42.75" required />
+                                            <p class="d360-help">1 kg satış fiyatı.</p>
+                                        </fieldset>
+                                    </div>
+                                    
+                                    <fieldset class="d360-field">
+                                        <legend>Ödenen Tutar</legend>
+                                        <input id="paidAmount" type="number" min="0" step="0.01" class="d360-input" placeholder="Örn: 5000" />
+                                        <p class="d360-help">İlk ödeme varsa giriniz (opsiyonel).</p>
+                                    </fieldset>
+
+                                    <div id="inlineWarning"
+                                        class="hidden rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                                        <div class="flex items-start gap-2">
+                                            <span
+                                                class="material-symbols-rounded text-[20px] leading-none">warning</span>
+                                            <div>
+                                                <p class="font-semibold">Kasa ağırlığı ürün aralığı dışında görünüyor.
+                                                </p>
+                                                <p id="inlineWarningText" class="mt-1"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-wrap items-center gap-3 pt-2">
+                                        <button type="submit" id="saveBtn"
+                                            class="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-5 py-3 text-sm font-semibold hover:bg-slate-800 transition">
+                                            <span class="material-symbols-rounded text-[20px]">save</span>
+                                            Kaydet
+                                        </button>
+
+                                        <button type="button" id="clearBtn"
+                                            class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                                            <span class="material-symbols-rounded text-[20px]">refresh</span>
+                                            Temizle
+                                        </button>
+                                    </div>
+                                </form>
+                            </section>
+
+                            <aside class="space-y-4">
+                                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                                    <h2 class="text-lg font-semibold mb-4">Canlı Özet</h2>
+
+                                    <div class="grid grid-cols-1 gap-3">
+                                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+                                            <p class="text-xs text-slate-500">Ortalama Kasa Kilosu</p>
+                                            <p id="avgBoxWeightText" class="mt-1 text-xl font-bold">0.00 kg</p>
+                                        </div>
+
+                                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+                                            <p class="text-xs text-slate-500">Toplam Tutar</p>
+                                            <p id="totalAmountText" class="mt-1 text-xl font-bold">0.00 ₺</p>
+                                        </div>
+
+                                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+                                            <p class="text-xs text-slate-500">Kalan Tutar</p>
+                                            <p id="remainingAmountText" class="mt-1 text-xl font-bold">0.00 ₺</p>
+                                        </div>
+
+                                        <div class="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+                                            <p class="text-xs text-slate-500">Ödeme Durumu</p>
+                                            <p id="paymentStatusText" class="mt-1 text-base font-semibold">Ödenecek</p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                                    <h2 class="text-lg font-semibold mb-3">Ürün Kontrolü</h2>
+                                    <div class="space-y-2 text-sm text-slate-600">
+                                        <p><span class="font-medium text-slate-800">Min:</span> <span
+                                                id="minWeightText">-</span></p>
+                                        <p><span class="font-medium text-slate-800">Max:</span> <span
+                                                id="maxWeightText">-</span></p>
+                                        <p><span class="font-medium text-slate-800">Durum:</span> <span
+                                                id="weightCheckStatus">Ürün seçilmedi</span></p>
+                                    </div>
+                                </section>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 p-4">
+        <div class="min-h-full flex items-center justify-center">
+            <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-slate-200">
+                <div class="p-5 border-b border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-rounded text-amber-600">warning</span>
+                        <h3 class="text-lg font-semibold">Emin misiniz?</h3>
+                    </div>
+                </div>
+
+                <div class="p-5">
+                    <p class="text-sm text-slate-600">
+                        Girilen değer ürün için beklenen kasa ağırlığı aralığının dışında görünüyor.
+                    </p>
+                    <p id="confirmMessage" class="mt-3 text-sm font-medium text-slate-800"></p>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 p-5 border-t border-slate-200">
+                    <button type="button" id="cancelConfirmBtn"
+                        class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Vazgeç
+                    </button>
+                    <button type="button" id="approveConfirmBtn"
+                        class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                        Eminim, Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/pages/ledger-entry-create.js"></script>
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+</body>
+
+</html>
