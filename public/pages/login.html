@@ -9,6 +9,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/auth_guard.js"></script>
     <script src="/assets/js/api_service.js"></script>
 </head>
 
@@ -199,12 +200,14 @@
                         throw new Error(error.message || "Giriş başarısız");
                     }
 
+                    console.log("login result:", data);
                     showMessage("success", "Giriş başarılı, yönlendiriliyorsunuz...");
 
-                    // Supabase onAuthStateChange automatically handles redirect,
-                    // but we can also manually redirect here as fallback
+                    // auth_guard.js won't catch immediate login without reload, 
+                    // so we manually redirect to dashboard
                     setTimeout(() => {
-                        window.location.href = "/";
+                        console.log("redirect path: /pages/dashboard.html");
+                        window.location.href = "/pages/dashboard.html";
                     }, 800);
 
                 } catch (err) {

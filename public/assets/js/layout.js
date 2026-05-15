@@ -52,19 +52,6 @@
       applySidebarState();
     });
   }
-  (function () {
-  const publicPaths = ["/giris", "/pages/login.html", "/", "/index.html"];
-
-  const path = window.location.pathname;
-
-  if (!publicPaths.includes(path)) {
-    const user = localStorage.getItem("sb-qUjar9g0MArtm9TVR7bGqw-auth-token") || localStorage.getItem("authUser");
-
-    if (!user) {
-      window.location.href = "/pages/login.html";
-    }
-  }
-})();
 
   async function initLayout() {
     await Promise.all([

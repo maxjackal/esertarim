@@ -9,16 +9,14 @@ window.sb = window.supabase.createClient(
 );
 
 window.sb.auth.onAuthStateChange((event, session) => {
-    const publicPaths = ['/pages/login.html', '/giris'];
+    const publicPaths = ['/pages/login.html', '/pages/login', '/giris'];
     const currentPath = window.location.pathname;
     
     if (event === 'SIGNED_OUT') {
-        if (!publicPaths.some(p => currentPath.includes(p))) {
-            window.location.href = '/pages/login.html';
-        }
-    } else if (event === 'SIGNED_IN') {
-        if (publicPaths.some(p => currentPath.includes(p))) {
-            window.location.href = '/';
+        const isPublic = publicPaths.some(p => currentPath === p || currentPath.startsWith(p));
+        if (!isPublic) {
+            window.location.replace('/pages/login.html');
         }
     }
+    // We do NOT redirect on SIGNED_IN here to avoid race conditions with auth_guard.js
 });
