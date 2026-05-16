@@ -4,6 +4,7 @@
     sellers: [],
     currentPaymentRow: null,
     ledgerId: 0,
+    ledgerProductId: 0,
     ledgerContext: null,
     currentItems: [],
   };
@@ -68,6 +69,11 @@
     const pathParts = url.pathname.split("/").filter(Boolean);
     const lastPart = Number(pathParts[pathParts.length - 1] || 0);
     return queryId || lastPart || 0;
+  }
+
+  function getLedgerProductIdFromUrl() {
+    const url = new URL(window.location.href);
+    return Number(url.searchParams.get("product_id") || 0);
   }
 
   function toast(message, type = "info") {
@@ -317,6 +323,7 @@
     const filters = {};
 
     if (state.ledgerId) filters.ledger_id = state.ledgerId;
+    if (state.ledgerProductId) filters.product_id = state.ledgerProductId;
     if (refs.fromDate?.value) filters.startDate = refs.fromDate.value;
     if (refs.toDate?.value) filters.endDate = refs.toDate.value;
     if (refs.sellerId?.value) filters.seller_id = refs.sellerId.value;
@@ -768,6 +775,7 @@
 
   async function init() {
     state.ledgerId = getLedgerIdFromUrl();
+    state.ledgerProductId = getLedgerProductIdFromUrl();
     await loadLookups();
 
     setupSellerAutocomplete({

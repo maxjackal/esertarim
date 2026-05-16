@@ -85,17 +85,23 @@
     return Object.fromEntries(Object.entries(cleaned).filter(([k]) => allowedColumns.includes(k)));
   };
 
-  const getOrCreateLedger = async ({ buyer_id }) => {
+  const getOrCreateLedger = async ({ buyer_id, product_id }) => {
     const buyerId = toNullableNumber(buyer_id);
+    const productId = toNullableNumber(product_id);
 
     if (!buyerId) {
       throw new Error("Defter oluşturmak için alıcı seçilmelidir.");
+    }
+
+    if (!productId) {
+      throw new Error("Defter oluşturmak için ürün seçilmelidir.");
     }
 
     const ledgerRes = await window.sb
       .from("ledgers")
       .select("id")
       .eq("buyer_id", buyerId)
+      .eq("product_id", productId)
       .limit(1)
       .maybeSingle();
 
@@ -108,6 +114,7 @@
 
     const newLedgerPayload = sanitizePayload("ledgers", {
       buyer_id: buyerId,
+      product_id: productId,
     });
 
     const newLedger = await window.sb.from("ledgers").insert([newLedgerPayload]).select("id").single();
@@ -118,6 +125,7 @@
         .from("ledgers")
         .select("id")
         .eq("buyer_id", buyerId)
+        .eq("product_id", productId)
         .limit(1)
         .maybeSingle();
       if (!fallback.error && fallback.data?.id) return fallback.data.id;
@@ -296,7 +304,7 @@
     buyers: ['id', 'name', 'phone', 'plate_no', 'address', 'created_at', 'note'],
     sellers: ['id', 'first_name', 'last_name', 'phone', 'address', 'created_at', 'note'],
     products: ['id', 'name', 'created_at', 'min_box_weight', 'max_box_weight'],
-    ledgers: ['id', 'buyer_id', 'created_at'],
+    ledgers: ['id', 'buyer_id', 'product_id', 'created_at'],
     ledger_entries: ['id', 'ledger_id', 'created_at', 'buyer_id', 'seller_id', 'product_id', 'box_count', 'net_weight', 'avg_box_weight', 'total_amount', 'remaining_amount', 'unit_price', 'paid_amount', 'payment_status', 'note', 'weight_warning', 'entry_date'],
     ledger_payments: ['id', 'created_at', 'note', 'status', 'ledger_entry_id', 'amount', 'payment_method', 'payment_date']
   };

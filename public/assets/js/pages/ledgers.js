@@ -15,6 +15,10 @@
     return Number(item.ledger_id || item.ledger?.id || 0);
   }
 
+  function getGroupKey(item) {
+    return `${item.buyer_id || 0}_${item.product_id || 0}`;
+  }
+
   function toast(message, type = "info") {
     if (window.Toast?.show) {
       window.Toast.show(message, type);
@@ -55,7 +59,7 @@
         <td class="py-3 pr-4">${item.last_entry_date || "-"}</td>
         <td class="py-3 pr-4">
           <a
-            href="/pages/ledger-details?id=${item.id}"
+            href="/pages/ledger-details?id=${item.id}&product_id=${item.product_id || ""}"
             class="inline-flex rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             Detay
@@ -90,13 +94,14 @@
       const ledgerGroups = {};
       items.forEach(e => {
           const ledgerId = getLedgerId(e);
-          const key = ledgerId ? `ledger_${ledgerId}` : `fallback_${e.buyer_id}_${e.product_id}`;
+          const key = getGroupKey(e);
           if (!ledgerGroups[key]) {
               ledgerGroups[key] = {
                   id: ledgerId || e.id,
+                  buyer_id: e.buyer_id,
+                  product_id: e.product_id,
                   buyer_name: e.buyer?.name,
                   product_name: e.product?.name,
-                  product_names: new Set(),
                   entry_count: 0,
                   total_boxes: 0,
                   total_weight: 0,
@@ -106,7 +111,6 @@
               };
           }
           const group = ledgerGroups[key];
-          if (e.product?.name) group.product_names.add(e.product.name);
           group.entry_count++;
           group.total_boxes += (e.box_count || 0);
           group.total_weight += (e.net_weight || 0);
@@ -114,17 +118,11 @@
           group.total_remaining += (e.remaining_amount || 0);
           if (new Date(e.entry_date) > new Date(group.last_entry_date)) {
               group.last_entry_date = e.entry_date;
-              group.id = e.id;
+              group.id = ledgerId || e.id;
           }
       });
       
-      const groupedItems = Object.values(ledgerGroups).map((item) => {
-        const productNames = Array.from(item.product_names || []);
-        return {
-          ...item,
-          product_name: productNames.length > 1 ? productNames.join(", ") : item.product_name,
-        };
-      });
+      const groupedItems = Object.values(ledgerGroups);
 
       state.currentItems = groupedItems;
       refs.tbody.innerHTML = groupedItems.map(rowTemplate).join("");
