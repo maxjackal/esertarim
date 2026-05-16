@@ -19,10 +19,12 @@ paymentMethod: document.getElementById("paymentMethod"),
     paymentAmount: document.getElementById("paymentAmount"),
     paymentNote: document.getElementById("paymentNote"),
     savePaymentBtn: document.getElementById("savePaymentBtn"),
+    exportPaymentsBtn: document.getElementById("exportPaymentsBtn"),
     paymentTableBody: document.getElementById("paymentTableBody"),
   };
 
   let currentEntry = null;
+  let currentPayments = [];
 
   function showToastSafe(type, message) {
     if (typeof window.showToast === "function") {
@@ -121,6 +123,7 @@ function getPaymentMethodLabel(method) {
 function renderPayments(items) {
   const tbody = els.paymentTableBody;
   if (!tbody) return;
+  currentPayments = Array.isArray(items) ? items : [];
 
   if (!Array.isArray(items) || !items.length) {
     tbody.innerHTML = `
@@ -341,5 +344,25 @@ function resetPaymentForm() {
 
   window.cancelPayment = cancelPayment;
   els.savePaymentBtn?.addEventListener("click", savePayment);
+  els.exportPaymentsBtn?.addEventListener("click", () => {
+    try {
+      window.ExcelExportUtils.exportRowsToExcel(
+        currentPayments,
+        [
+          { label: "Tarih", key: "payment_date", type: "date" },
+          { label: "Tutar", key: "amount", type: "money" },
+          { label: "Yöntem", value: (row) => getPaymentMethodLabel(row.payment_method) },
+          { label: "Açıklama", key: "note" },
+          { label: "İşlem Yapan", value: (row) => row.status === "cancelled" ? (row.cancelled_by || row.created_by || "-") : (row.created_by || "-") },
+          { label: "Oluşturulma", key: "created_at" },
+          { label: "Durum", value: (row) => row.status === "cancelled" ? "İptal Edildi" : "Aktif" },
+        ],
+        `tahsilat-hareketleri-${entryId}.xlsx`,
+        "Tahsilatlar"
+      );
+    } catch (err) {
+      showToastSafe("error", err.message);
+    }
+  });
   window.addEventListener("DOMContentLoaded", init);
 })();

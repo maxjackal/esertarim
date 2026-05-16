@@ -6,6 +6,7 @@
     name: document.getElementById("name"),
     minWeight: document.getElementById("minWeight"),
     maxWeight: document.getElementById("maxWeight"),
+    exportBtn: document.getElementById("exportBtn"),
     tbody: document.getElementById("productTableBody"),
   };
 
@@ -75,6 +76,14 @@
       refs.form.reset();
       toast("Ürün eklendi", "success");
       await loadProducts();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  });
+
+  refs.exportBtn?.addEventListener("click", () => {
+    try {
+      window.ExcelExportUtils.exportTableToExcel("#productTable", "urunler.xlsx", "Ürünler");
     } catch (err) {
       toast(err.message, "error");
     }

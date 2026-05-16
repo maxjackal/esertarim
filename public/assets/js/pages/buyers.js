@@ -6,6 +6,7 @@
     name: document.getElementById("name"),
     phone: document.getElementById("phone"),
     plateNo: document.getElementById("plateNo"),
+    exportBtn: document.getElementById("exportBtn"),
     tbody: document.getElementById("buyerTableBody"),
   };
 
@@ -78,6 +79,14 @@ function toast(message, type = "info") {
       refs.form.reset();
       toast("Alıcı eklendi", "success");
       await loadBuyers();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  });
+
+  refs.exportBtn?.addEventListener("click", () => {
+    try {
+      window.ExcelExportUtils.exportTableToExcel("#buyerTable", "alicilar.xlsx", "Alıcılar");
     } catch (err) {
       toast(err.message, "error");
     }

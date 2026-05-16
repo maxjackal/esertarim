@@ -9,9 +9,11 @@
     <link rel="stylesheet" href="/assets/css/styles.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="/assets/js/supabase_client.js"></script>
     <script src="/assets/js/auth_guard.js"></script>
     <script src="/assets/js/api_service.js"></script>
+    <script src="/assets/js/export_utils.js"></script>
 </head>
 
 <body data-page-title="Defter Kayıtları" class="bg-slate-50 text-slate-800">
@@ -26,8 +28,8 @@
                     <div class="mx-auto max-w-7xl px-4 py-6">
                         <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div>
-                                <h1 class="text-2xl font-bold text-slate-900">Defter Kayıtları</h1>
-                                <p class="mt-1 text-sm text-slate-500">
+                                <h1 id="pageTitle" class="text-2xl font-bold text-slate-900">Defter Kayıtları</h1>
+                                <p id="pageDescription" class="mt-1 text-sm text-slate-500">
                                     Satıcı, alıcı ve ürün bazlı kayıtları görüntüleyin, filtreleyin ve tahsilat
                                     işlemlerini yönetin.
                                 </p>
@@ -40,6 +42,12 @@
                                 </a>
                             </div>
                         </div>
+
+                        <section id="ledgerContextBar"
+                            class="mb-6 hidden rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Defter</p>
+                            <p id="ledgerContextText" class="mt-1 text-sm font-semibold text-slate-900">-</p>
+                        </section>
 
                         <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
@@ -108,10 +116,14 @@
                                         Satıra çift tıklayarak detay ekranına geçebilirsiniz.
                                     </p>
                                 </div>
+                                <button id="exportBtn"
+                                    class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+                                    Excel İndir
+                                </button>
                             </div>
 
                             <div class="overflow-x-auto">
-                                <table class="min-w-full text-sm">
+                                <table id="entryTable" class="min-w-full text-sm">
                                     <thead>
                                         <tr class="border-b border-slate-200 text-left text-slate-500">
                                             <th class="py-3 pr-4">Tarih</th>

@@ -1,6 +1,7 @@
 (() => {
   const state = {
     sellers: [],
+    currentItems: [],
   };
 
   const refs = {
@@ -248,6 +249,7 @@
               entry_date: item.entry_date
           };
       });
+      state.currentItems = items;
 
       renderSummary(summary);
       refs.tbody.innerHTML = items.map(rowTemplate).join("");
@@ -273,12 +275,45 @@
   });
 
   refs.csvBtn?.addEventListener("click", () => {
-    toast("Sunucusuz sürümde CSV dışa aktarma geçici olarak devre dışıdır.");
+    try {
+      window.ExcelExportUtils.exportRowsToCsv(
+        state.currentItems,
+        getExportColumns(),
+        "satici-raporu.csv",
+        "Satıcı Raporu"
+      );
+    } catch (err) {
+      toast(err.message);
+    }
   });
 
   refs.excelBtn?.addEventListener("click", () => {
-    toast("Sunucusuz sürümde Excel dışa aktarma geçici olarak devre dışıdır.");
+    try {
+      window.ExcelExportUtils.exportRowsToExcel(
+        state.currentItems,
+        getExportColumns(),
+        "satici-raporu.xlsx",
+        "Satıcı Raporu"
+      );
+    } catch (err) {
+      toast(err.message);
+    }
   });
+
+  function getExportColumns() {
+    return [
+      { label: "Tarih", key: "entry_date", type: "date" },
+      { label: "Alıcı", key: "buyer_name" },
+      { label: "Ürün", key: "product_name" },
+      { label: "Kasa", key: "box_count", type: "integer" },
+      { label: "Kilo", key: "net_weight", type: "number" },
+      { label: "Birim Fiyat", key: "unit_price", type: "money" },
+      { label: "Toplam", key: "total_amount", type: "money" },
+      { label: "Ödenen", key: "paid_amount", type: "money" },
+      { label: "Kalan", key: "remaining_amount", type: "money" },
+      { label: "Durum", value: (row) => paymentText(row.payment_status) },
+    ];
+  }
 
   async function init() {
     await loadSellers();

@@ -6,6 +6,7 @@
     firstName: document.getElementById("firstName"),
     lastName: document.getElementById("lastName"),
     phone: document.getElementById("phone"),
+    exportBtn: document.getElementById("exportBtn"),
     tbody: document.getElementById("sellerTableBody"),
   };
 
@@ -75,6 +76,14 @@
       refs.form.reset();
       toast("Satıcı eklendi", "success");
       await loadSellers();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  });
+
+  refs.exportBtn?.addEventListener("click", () => {
+    try {
+      window.ExcelExportUtils.exportTableToExcel("#sellerTable", "saticilar.xlsx", "Satıcılar");
     } catch (err) {
       toast(err.message, "error");
     }

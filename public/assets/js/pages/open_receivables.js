@@ -1,6 +1,7 @@
 (() => {
   const state = {
     sellers: [],
+    currentItems: [],
   };
 
   const $ = (id) => document.getElementById(id);
@@ -244,6 +245,7 @@
           product_name: item.product ? item.product.name : '',
           entry_date: item.entry_date
       }));
+      state.currentItems = items;
 
       refs.totalCount.textContent = items.length || 0;
       refs.totalRemaining.textContent = formatMoney(items.reduce((sum, item) => sum + (item.remaining_amount || 0), 0));
@@ -303,7 +305,25 @@
   });
 
   refs.exportBtn?.addEventListener("click", () => {
-    toast("Sunucusuz sürümde Excel dışa aktarma geçici olarak devre dışıdır.", "warning");
+    try {
+      window.ExcelExportUtils.exportRowsToExcel(
+        state.currentItems,
+        [
+          { label: "Tarih", key: "entry_date", type: "date" },
+          { label: "Satıcı", key: "seller_name" },
+          { label: "Alıcı", key: "buyer_name" },
+          { label: "Ürün", key: "product_name" },
+          { label: "Toplam", key: "total_amount", type: "money" },
+          { label: "Tahsil Edilen", key: "paid_amount", type: "money" },
+          { label: "Kalan", key: "remaining_amount", type: "money" },
+          { label: "Durum", value: (row) => row.payment_status === "odendi" ? "Ödendi" : row.payment_status === "kismi_odendi" ? "Kısmi Ödendi" : "Ödenmedi" },
+        ],
+        "acik-alacaklar.xlsx",
+        "Açık Alacaklar"
+      );
+    } catch (err) {
+      toast(err.message, "error");
+    }
   });
 
   async function init() {

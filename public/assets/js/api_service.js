@@ -321,6 +321,7 @@
           `).order('entry_date', { ascending: false });
           
           if (filters.id) query = query.eq('id', filters.id);
+          if (filters.ledger_id) query = query.eq('ledger_id', filters.ledger_id);
           if (filters.date) query = query.eq('entry_date', filters.date);
           if (filters.startDate) query = query.gte('entry_date', filters.startDate);
           if (filters.endDate) query = query.lte('entry_date', filters.endDate);

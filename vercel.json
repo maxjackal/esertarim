@@ -7,7 +7,7 @@
     { "source": "/kayit-ekle", "destination": "/pages/ledger-entry-create" },
     { "source": "/kayitlar", "destination": "/pages/ledger-entries" },
     { "source": "/defterler", "destination": "/pages/ledgers" },
-    { "source": "/defter-detay", "destination": "/pages/ledger-detail" },
+    { "source": "/defter-detay", "destination": "/pages/ledger-details" },
     { "source": "/tahsilatlar", "destination": "/pages/collections" },
     { "source": "/acik-alacaklar", "destination": "/pages/open_receivables" },
     { "source": "/tahsilat-raporu", "destination": "/pages/collection_reports" },

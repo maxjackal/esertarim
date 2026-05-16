@@ -3,11 +3,18 @@
     pendingUpdatePayload: null,
     sellers: [],
     currentPaymentRow: null,
+    ledgerId: 0,
+    ledgerContext: null,
+    currentItems: [],
   };
 
   const $ = (id) => document.getElementById(id);
 
   const refs = {
+    pageTitle: $("pageTitle"),
+    pageDescription: $("pageDescription"),
+    ledgerContextBar: $("ledgerContextBar"),
+    ledgerContextText: $("ledgerContextText"),
     fromDate: $("fromDate"),
     toDate: $("toDate"),
     sellerSearch: $("sellerSearch"),
@@ -18,6 +25,7 @@
     onlyWarnings: $("onlyWarnings"),
     filterBtn: $("filterBtn"),
     clearBtn: $("clearBtn"),
+    exportBtn: $("exportBtn"),
     tbody: $("entryTableBody"),
 
     editModal: $("editModal"),
@@ -50,6 +58,17 @@
     paymentRemainingInfo: $("paymentRemainingInfo"),
     savePaymentBtn: $("savePaymentBtn"),
   };
+
+  function getLedgerIdFromUrl() {
+    const url = new URL(window.location.href);
+    const isLedgerDetailPage = url.pathname.includes("ledger-details");
+    const queryId = Number(
+      url.searchParams.get("ledger_id") || (isLedgerDetailPage ? url.searchParams.get("id") : 0) || 0
+    );
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const lastPart = Number(pathParts[pathParts.length - 1] || 0);
+    return queryId || lastPart || 0;
+  }
 
   function toast(message, type = "info") {
     if (window.Toast?.show) {
@@ -106,6 +125,13 @@
       return `<span class="inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">Ödenmedi</span>`;
     }
     return `<span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">-</span>`;
+  }
+
+  function paymentStatusText(status) {
+    if (status === "odendi") return "Ödendi";
+    if (status === "kismi_odendi") return "Kısmi Ödendi";
+    if (status === "odenmedi") return "Ödenmedi";
+    return "-";
   }
 
   function todayAsInputValue() {
@@ -290,6 +316,7 @@
   function buildFilterQuery() {
     const filters = {};
 
+    if (state.ledgerId) filters.ledger_id = state.ledgerId;
     if (refs.fromDate?.value) filters.startDate = refs.fromDate.value;
     if (refs.toDate?.value) filters.endDate = refs.toDate.value;
     if (refs.sellerId?.value) filters.seller_id = refs.sellerId.value;
@@ -298,6 +325,34 @@
     if (refs.onlyWarnings?.checked) filters.only_warnings = true;
 
     return filters;
+  }
+
+  function applyLedgerContext(items = []) {
+    if (!state.ledgerId) return;
+
+    const first = items[0] || null;
+    const buyerName = first?.buyer_name || first?.buyer?.name || "";
+    const productNames = Array.from(
+      new Set(items.map((item) => item.product_name || item.product?.name).filter(Boolean))
+    );
+
+    state.ledgerContext = {
+      buyerName,
+      productNames,
+      entryCount: items.length,
+    };
+
+    if (refs.pageTitle) refs.pageTitle.textContent = "Defter Detayı";
+    if (refs.pageDescription) {
+      refs.pageDescription.textContent =
+        "Bu deftere kayıtlı hareketleri görüntüleyin, filtreleyin ve tahsilat işlemlerini yönetin.";
+    }
+
+    if (refs.ledgerContextBar && refs.ledgerContextText) {
+      const productText = productNames.length ? productNames.join(", ") : "Ürün yok";
+      refs.ledgerContextText.textContent = `${buyerName || "Alıcı yok"} / ${productText} / ${items.length} kayıt`;
+      refs.ledgerContextBar.classList.remove("hidden");
+    }
   }
 
   function rowTemplate(item) {
@@ -395,7 +450,10 @@
          items = items.filter(i => i.weight_warning);
       }
 
+      state.currentItems = items;
+
       if (!items.length) {
+        applyLedgerContext(items);
         refs.tbody.innerHTML = `
           <tr>
             <td colspan="12" class="py-8 text-center text-sm text-slate-500">
@@ -406,6 +464,7 @@
         return;
       }
 
+      applyLedgerContext(items);
       refs.tbody.innerHTML = items.map(rowTemplate).join("");
       bindRowNavigation();
 
@@ -629,6 +688,32 @@
   function bindStaticEvents() {
     refs.filterBtn?.addEventListener("click", loadEntries);
 
+    refs.exportBtn?.addEventListener("click", () => {
+      try {
+        window.ExcelExportUtils.exportRowsToExcel(
+          state.currentItems,
+          [
+            { label: "Tarih", key: "entry_date", type: "date" },
+            { label: "Satıcı", key: "seller_name" },
+            { label: "Alıcı", key: "buyer_name" },
+            { label: "Ürün", key: "product_name" },
+            { label: "Kasa", key: "box_count", type: "integer" },
+            { label: "Kilo", key: "net_weight", type: "number" },
+            { label: "Birim Fiyat", key: "unit_price", type: "money" },
+            { label: "Toplam", key: "total_amount", type: "money" },
+            { label: "Tahsil Edilen", key: "paid_amount", type: "money" },
+            { label: "Kalan", key: "remaining_amount", type: "money" },
+            { label: "Durum", value: (row) => paymentStatusText(row.payment_status) },
+            { label: "Uyarı", value: (row) => row.weight_warning ? "Uyarılı" : "" },
+          ],
+          state.ledgerId ? `defter-${state.ledgerId}-kayitlari.xlsx` : "defter-kayitlari.xlsx",
+          "Kayıtlar"
+        );
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    });
+
     refs.clearBtn?.addEventListener("click", async () => {
       if (refs.fromDate) refs.fromDate.value = "";
       if (refs.toDate) refs.toDate.value = "";
@@ -682,6 +767,7 @@
   }
 
   async function init() {
+    state.ledgerId = getLedgerIdFromUrl();
     await loadLookups();
 
     setupSellerAutocomplete({

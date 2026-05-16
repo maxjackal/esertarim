@@ -5,6 +5,7 @@ const pathParts = url.pathname.split("/").filter(Boolean);
 const lastPart = Number(pathParts[pathParts.length - 1] || 0);
 
 const ledgerId = queryId || lastPart;
+let currentItems = [];
 
   const els = {
     summaryBuyerName: document.getElementById("summaryBuyerName"),
@@ -231,6 +232,7 @@ const ledgerId = queryId || lastPart;
           avg_box_weight: item.box_count ? item.net_weight / item.box_count : 0
       };
     });
+    currentItems = items;
 
     renderSummary(summary);
     renderItems(items);
@@ -267,7 +269,31 @@ const ledgerId = queryId || lastPart;
   }
 
   function exportFile(type) {
-    showToastSafe("warning", "Sunucusuz sürümde dışa aktarma henüz desteklenmiyor.");
+    const columns = [
+      { label: "Tarih", key: "entry_date", type: "date" },
+      { label: "Satıcı", key: "seller_name" },
+      { label: "Kasa", key: "box_count", type: "integer" },
+      { label: "Kilo", key: "net_weight", type: "number" },
+      { label: "Ortalama Kasa", key: "avg_box_weight", type: "number" },
+      { label: "Birim Fiyat", key: "unit_price", type: "money" },
+      { label: "Toplam", key: "total_amount", type: "money" },
+      { label: "Tahsil Edilen", key: "paid_amount", type: "money" },
+      { label: "Kalan", key: "remaining_amount", type: "money" },
+      { label: "Durum", value: (row) => getPaymentStatusLabel(row.payment_status) },
+      { label: "Uyarı", value: (row) => row.weight_warning ? (row.weight_warning_message || "Kasa ağırlık uyarısı var") : "" },
+      { label: "Not", key: "note" },
+    ];
+
+    try {
+      if (type === "csv") {
+        window.ExcelExportUtils.exportRowsToCsv(currentItems, columns, `defter-detayi-${ledgerId}.csv`, "Defter Detayı");
+        return;
+      }
+
+      window.ExcelExportUtils.exportRowsToExcel(currentItems, columns, `defter-detayi-${ledgerId}.xlsx`, "Defter Detayı");
+    } catch (err) {
+      showToastSafe("error", err.message || "Dışa aktarma başarısız");
+    }
   }
 
   async function handleFilter() {

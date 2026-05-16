@@ -1,6 +1,7 @@
 (() => {
   const state = {
     sellers: [],
+    currentItems: [],
   };
 
   const $ = (id) => document.getElementById(id);
@@ -254,6 +255,7 @@
       if (filters.seller_id) items = items.filter(i => String(i.seller_id) === String(filters.seller_id));
       if (filters.buyer_id) items = items.filter(i => String(i.buyer_id) === String(filters.buyer_id));
       if (filters.product_id) items = items.filter(i => String(i.product_id) === String(filters.product_id));
+      state.currentItems = items;
 
       refs.totalCount.textContent = items.length || 0;
       refs.totalAmount.textContent = formatMoney(items.reduce((sum, item) => sum + (item.amount || 0), 0));
@@ -301,7 +303,25 @@
   });
 
   refs.exportBtn?.addEventListener("click", () => {
-    toast("Sunucusuz sürümde Excel dışa aktarma geçici olarak devre dışıdır.", "warning");
+    try {
+      window.ExcelExportUtils.exportRowsToExcel(
+        state.currentItems,
+        [
+          { label: "Ödeme Tarihi", key: "payment_date", type: "date" },
+          { label: "Satıcı", key: "seller_name" },
+          { label: "Alıcı", key: "buyer_name" },
+          { label: "Ürün", key: "product_name" },
+          { label: "Tutar", key: "amount", type: "money" },
+          { label: "Yöntem", value: (row) => paymentMethodLabel(row.payment_method) },
+          { label: "Açıklama", key: "note" },
+          { label: "İşlem Yapan", key: "created_by" },
+        ],
+        "tahsilat-raporu.xlsx",
+        "Tahsilat Raporu"
+      );
+    } catch (err) {
+      toast(err.message, "error");
+    }
   });
 
   async function init() {

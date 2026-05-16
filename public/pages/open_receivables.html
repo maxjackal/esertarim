@@ -9,9 +9,11 @@
     <link rel="stylesheet" href="/assets/css/styles.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="/assets/js/supabase_client.js"></script>
     <script src="/assets/js/auth_guard.js"></script>
     <script src="/assets/js/api_service.js"></script>
+    <script src="/assets/js/export_utils.js"></script>
 </head>
 
 <body data-page-title="Açık Alacaklar" class="bg-slate-50 text-slate-800">
@@ -103,7 +105,7 @@
 
                         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                             <div class="overflow-x-auto">
-                                <table class="min-w-full text-sm">
+                                <table id="receivableTable" class="min-w-full text-sm">
                                     <thead>
                                         <tr class="border-b border-slate-200 text-left text-slate-500">
                                             <th class="py-3 pr-4">Tarih</th>

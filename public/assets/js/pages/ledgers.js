@@ -3,8 +3,17 @@
     buyerFilter: document.getElementById("buyerFilter"),
     productFilter: document.getElementById("productFilter"),
     filterBtn: document.getElementById("filterBtn"),
+    exportBtn: document.getElementById("exportBtn"),
     tbody: document.getElementById("ledgerTableBody"),
   };
+
+  const state = {
+    currentItems: [],
+  };
+
+  function getLedgerId(item) {
+    return Number(item.ledger_id || item.ledger?.id || 0);
+  }
 
   function toast(message, type = "info") {
     if (window.Toast?.show) {
@@ -46,7 +55,7 @@
         <td class="py-3 pr-4">${item.last_entry_date || "-"}</td>
         <td class="py-3 pr-4">
           <a
-            href="/pages/ledger-detail?id=${item.id}"
+            href="/pages/ledger-details?id=${item.id}"
             class="inline-flex rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             Detay
@@ -80,12 +89,14 @@
       
       const ledgerGroups = {};
       items.forEach(e => {
-          const key = `${e.buyer_id}_${e.product_id}`;
+          const ledgerId = getLedgerId(e);
+          const key = ledgerId ? `ledger_${ledgerId}` : `fallback_${e.buyer_id}_${e.product_id}`;
           if (!ledgerGroups[key]) {
               ledgerGroups[key] = {
-                  id: e.id, // Just an entry id for detail link
+                  id: ledgerId || e.id,
                   buyer_name: e.buyer?.name,
                   product_name: e.product?.name,
+                  product_names: new Set(),
                   entry_count: 0,
                   total_boxes: 0,
                   total_weight: 0,
@@ -95,6 +106,7 @@
               };
           }
           const group = ledgerGroups[key];
+          if (e.product?.name) group.product_names.add(e.product.name);
           group.entry_count++;
           group.total_boxes += (e.box_count || 0);
           group.total_weight += (e.net_weight || 0);
@@ -106,8 +118,15 @@
           }
       });
       
-      const groupedItems = Object.values(ledgerGroups);
+      const groupedItems = Object.values(ledgerGroups).map((item) => {
+        const productNames = Array.from(item.product_names || []);
+        return {
+          ...item,
+          product_name: productNames.length > 1 ? productNames.join(", ") : item.product_name,
+        };
+      });
 
+      state.currentItems = groupedItems;
       refs.tbody.innerHTML = groupedItems.map(rowTemplate).join("");
     } catch (err) {
       toast(err.message);
@@ -115,6 +134,27 @@
   }
 
   refs.filterBtn.addEventListener("click", loadLedgers);
+  refs.exportBtn?.addEventListener("click", () => {
+    try {
+      window.ExcelExportUtils.exportRowsToExcel(
+        state.currentItems,
+        [
+          { label: "Alıcı", key: "buyer_name" },
+          { label: "Ürün", key: "product_name" },
+          { label: "Kayıt", key: "entry_count", type: "integer" },
+          { label: "Kasa", key: "total_boxes", type: "integer" },
+          { label: "Kilo", key: "total_weight", type: "number" },
+          { label: "Toplam", key: "total_amount", type: "money" },
+          { label: "Kalan", key: "total_remaining", type: "money" },
+          { label: "Son Tarih", key: "last_entry_date", type: "date" },
+        ],
+        "defterler.xlsx",
+        "Defterler"
+      );
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  });
 
   async function init() {
     await loadLookups();
