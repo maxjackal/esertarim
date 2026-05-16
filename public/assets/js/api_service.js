@@ -59,8 +59,8 @@
     },
     create: async (payload) => {
       // Otomatik ledger oluşturma mantığı
-      if (tableName === 'ledger_entries' && !payload.ledger_id && payload.buyer_id && payload.seller_id) {
-         let ledgerRes = await window.sb.from('ledgers').select('id').eq('buyer_id', payload.buyer_id).eq('seller_id', payload.seller_id).limit(1);
+      if (tableName === 'ledger_entries' && !payload.ledger_id && payload.buyer_id) {
+         let ledgerRes = await window.sb.from('ledgers').select('id').eq('buyer_id', payload.buyer_id).limit(1);
          if (ledgerRes.error) {
             logSupabaseError(ledgerRes.error);
             throw new Error("Defter sorgulanırken hata oluştu: " + ledgerRes.error.message);
@@ -69,7 +69,7 @@
          if (ledgerRes.data && ledgerRes.data.length > 0) {
             payload.ledger_id = ledgerRes.data[0].id;
          } else {
-            let newLedger = await window.sb.from('ledgers').insert([{ buyer_id: payload.buyer_id, seller_id: payload.seller_id }]).select();
+            let newLedger = await window.sb.from('ledgers').insert([{ buyer_id: payload.buyer_id }]).select();
             if (newLedger.error) {
                logSupabaseError(newLedger.error);
                throw new Error("Defter oluşturulamadı: " + newLedger.error.message);
@@ -90,8 +90,8 @@
     },
     update: async (id, payload) => {
       // Otomatik ledger ID güncelleme (buyer_id değişirse)
-      if (tableName === 'ledger_entries' && payload.buyer_id && payload.seller_id) {
-         let ledgerRes = await window.sb.from('ledgers').select('id').eq('buyer_id', payload.buyer_id).eq('seller_id', payload.seller_id).limit(1);
+      if (tableName === 'ledger_entries' && payload.buyer_id) {
+         let ledgerRes = await window.sb.from('ledgers').select('id').eq('buyer_id', payload.buyer_id).limit(1);
          if (ledgerRes.error) {
             logSupabaseError(ledgerRes.error);
             throw new Error("Defter sorgulanırken hata oluştu: " + ledgerRes.error.message);
@@ -100,7 +100,7 @@
          if (ledgerRes.data && ledgerRes.data.length > 0) {
             payload.ledger_id = ledgerRes.data[0].id;
          } else {
-            let newLedger = await window.sb.from('ledgers').insert([{ buyer_id: payload.buyer_id, seller_id: payload.seller_id }]).select();
+            let newLedger = await window.sb.from('ledgers').insert([{ buyer_id: payload.buyer_id }]).select();
             if (newLedger.error) {
                logSupabaseError(newLedger.error);
                throw new Error("Defter oluşturulamadı: " + newLedger.error.message);
