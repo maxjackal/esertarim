@@ -4,6 +4,7 @@
   const NUMBER_FORMAT = "#,##0.00";
   const INTEGER_FORMAT = "#,##0";
   const DATE_FORMAT = "yyyy-mm-dd";
+  const DEFAULT_WATERMARK = "ESER TARIM";
 
   function ensureXlsx() {
     if (!window.XLSX) {
@@ -89,7 +90,25 @@
     return { v: text, t: "s" };
   }
 
-  function sheetFromRows(rows, columns) {
+  function applyWatermark(ws, watermarkText = DEFAULT_WATERMARK) {
+    if (!watermarkText) return;
+
+    const watermark = String(watermarkText).trim();
+    if (!watermark) return;
+
+    ws["!headerFooter"] = {
+      oddHeader: `&C&KDDDDDD&36${watermark}`,
+      evenHeader: `&C&KDDDDDD&36${watermark}`,
+      firstHeader: `&C&KDDDDDD&36${watermark}`,
+    };
+    ws["!pageSetup"] = {
+      orientation: "landscape",
+      fitToWidth: 1,
+      fitToHeight: 0,
+    };
+  }
+
+  function sheetFromRows(rows, columns, options = {}) {
     const headers = columns.map((col) => col.label);
     const aoa = [headers];
 
@@ -120,28 +139,29 @@
     if (rows.length) {
       ws["!autofilter"] = { ref: window.XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: headers.length - 1 } }) };
     }
+    applyWatermark(ws, options.watermarkText ?? DEFAULT_WATERMARK);
     return ws;
   }
 
-  function exportRowsToExcel(rows, columns, fileName = "rapor.xlsx", sheetName = "Rapor") {
+  function exportRowsToExcel(rows, columns, fileName = "rapor.xlsx", sheetName = "Rapor", options = {}) {
     ensureXlsx();
     const usableColumns = (columns || []).filter((col) => col && col.label && !col.hidden);
-    const ws = sheetFromRows(rows || [], usableColumns);
+    const ws = sheetFromRows(rows || [], usableColumns, options);
     const wb = window.XLSX.utils.book_new();
     window.XLSX.utils.book_append_sheet(wb, ws, sheetName || "Rapor");
     window.XLSX.writeFile(wb, normalizeFileName(fileName));
   }
 
-  function exportRowsToCsv(rows, columns, fileName = "rapor.csv", sheetName = "Rapor") {
+  function exportRowsToCsv(rows, columns, fileName = "rapor.csv", sheetName = "Rapor", options = {}) {
     ensureXlsx();
     const usableColumns = (columns || []).filter((col) => col && col.label && !col.hidden);
-    const ws = sheetFromRows(rows || [], usableColumns);
+    const ws = sheetFromRows(rows || [], usableColumns, options);
     const wb = window.XLSX.utils.book_new();
     window.XLSX.utils.book_append_sheet(wb, ws, sheetName || "Rapor");
     window.XLSX.writeFile(wb, normalizeFileName(fileName).replace(/\.xlsx$/i, ".csv"), { bookType: "csv" });
   }
 
-  function exportTableToExcel(tableSelector, fileName = "rapor.xlsx", sheetName = "Rapor") {
+  function exportTableToExcel(tableSelector, fileName = "rapor.xlsx", sheetName = "Rapor", options = {}) {
     const table = typeof tableSelector === "string" ? document.querySelector(tableSelector) : tableSelector;
     if (!table) throw new Error("Dışa aktarılacak tablo bulunamadı.");
 
@@ -166,7 +186,7 @@
       })
       .filter((row) => Object.values(row).some((value) => value !== ""));
 
-    exportRowsToExcel(rows, includedIndexes.map(({ label }) => ({ label, key: label })), fileName, sheetName);
+    exportRowsToExcel(rows, includedIndexes.map(({ label }) => ({ label, key: label })), fileName, sheetName, options);
   }
 
   window.ExcelExportUtils = {
