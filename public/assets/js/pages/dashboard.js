@@ -41,14 +41,7 @@
     }).format(Number(value || 0));
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
-  }
+  const escapeHtml = window.AppSecurity?.escapeHtml || ((value) => String(value ?? ""));
 
   function buildQuery() {
     const params = new URLSearchParams();

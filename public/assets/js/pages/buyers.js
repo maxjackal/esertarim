@@ -9,6 +9,7 @@
     exportBtn: document.getElementById("exportBtn"),
     tbody: document.getElementById("buyerTableBody"),
   };
+  const escapeHtml = window.AppSecurity?.escapeHtml || ((value) => String(value ?? ""));
 
 function toast(message, type = "info") {
   if (window.Toast?.show) {
@@ -23,8 +24,8 @@ function toast(message, type = "info") {
   function rowTemplate(item) {
     return `
       <tr class="border-b border-slate-100">
-        <td class="py-3 pr-4 font-medium">${item.name || ""}</td>
-        <td class="py-3 pr-4">${item.plate_no || "-"}</td>
+        <td class="py-3 pr-4 font-medium">${escapeHtml(item.name || "")}</td>
+        <td class="py-3 pr-4">${escapeHtml(item.plate_no || "-")}</td>
         <td class="py-3 pr-4">
           <button
             class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"

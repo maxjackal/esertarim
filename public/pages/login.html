@@ -7,7 +7,7 @@
     <title>Eser Tarım | Giriş</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.3"></script>
     <script src="/assets/js/supabase_client.js"></script>
     <script src="/assets/js/auth_guard.js"></script>
     <script src="/assets/js/api_service.js"></script>
@@ -200,13 +200,11 @@
                         throw new Error(error.message || "Giriş başarısız");
                     }
 
-                    console.log("login result:", data);
                     showMessage("success", "Giriş başarılı, yönlendiriliyorsunuz...");
 
                     // auth_guard.js won't catch immediate login without reload, 
                     // so we manually redirect to dashboard
                     setTimeout(() => {
-                        console.log("redirect path: /pages/dashboard");
                         window.location.href = "/pages/dashboard";
                     }, 800);
 

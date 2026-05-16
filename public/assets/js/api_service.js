@@ -1,6 +1,6 @@
 (() => {
   const logSupabaseError = (error) => {
-    console.error("Supabase error:", {
+    window.AppSecurity?.error("Supabase error:", {
       message: error.message,
       details: error.details,
       hint: error.hint,
@@ -176,7 +176,7 @@
 
   const createCrudMethods = (tableName) => ({
     getAll: async (queryParams = {}) => {
-      let query = window.sb.from(tableName).select('*');
+      let query = window.sb.from(tableName).select(tableSelectColumns[tableName] || '*');
       
       if (queryParams.order) {
          query = query.order(queryParams.order, { ascending: queryParams.ascending ?? true });
@@ -206,7 +206,7 @@
       return { items: data || [] };
     },
     getById: async (id) => {
-      const { data, error } = await window.sb.from(tableName).select('*').eq('id', id).single();
+      const { data, error } = await window.sb.from(tableName).select(tableSelectColumns[tableName] || '*').eq('id', id).single();
       if (error) {
         logSupabaseError(error);
         throw new Error(error.message);
@@ -244,7 +244,7 @@
       if (tableName === 'ledger_payments') {
         const { data: oldRow, error: oldError } = await window.sb
           .from(tableName)
-          .select('*')
+          .select(tableSelectColumns[tableName] || '*')
           .eq('id', id)
           .single();
         if (oldError) {
@@ -258,7 +258,7 @@
       if (tableName === 'ledger_entries') {
         const { data: existing, error: existingError } = await window.sb
           .from(tableName)
-          .select('*')
+          .select(tableSelectColumns[tableName] || '*')
           .eq('id', id)
           .single();
         if (existingError) {
@@ -309,6 +309,15 @@
     ledger_payments: ['id', 'created_at', 'note', 'status', 'ledger_entry_id', 'amount', 'payment_method', 'payment_date']
   };
 
+  const tableSelectColumns = {
+    buyers: 'id,name,phone,plate_no,address,created_at,note',
+    sellers: 'id,first_name,last_name,phone,address,created_at,note',
+    products: 'id,name,created_at,min_box_weight,max_box_weight',
+    ledgers: 'id,buyer_id,product_id,created_at',
+    ledger_entries: 'id,ledger_id,created_at,buyer_id,seller_id,product_id,box_count,net_weight,avg_box_weight,total_amount,remaining_amount,unit_price,paid_amount,payment_status,note,weight_warning,entry_date',
+    ledger_payments: 'id,created_at,note,status,ledger_entry_id,amount,payment_method,payment_date'
+  };
+
   window.ApiService = {
     products: createCrudMethods('products'),
     buyers: createCrudMethods('buyers'),
@@ -322,7 +331,23 @@
        getLedgerEntriesWithRelations: async (filters = {}) => {
           // Supabase'in Foreign Key ilişkilerini kullanarak join atıyoruz.
           let query = window.sb.from('ledger_entries').select(`
-             *,
+             id,
+             ledger_id,
+             created_at,
+             buyer_id,
+             seller_id,
+             product_id,
+             box_count,
+             net_weight,
+             avg_box_weight,
+             total_amount,
+             remaining_amount,
+             unit_price,
+             paid_amount,
+             payment_status,
+             note,
+             weight_warning,
+             entry_date,
              buyer:buyer_id (id, name),
              seller:seller_id (id, first_name, last_name),
              product:product_id (id, name)
@@ -345,10 +370,20 @@
        
        getPaymentsWithRelations: async (filters = {}) => {
           let query = window.sb.from('ledger_payments').select(`
-             *,
+             id,
+             created_at,
+             note,
+             status,
+             ledger_entry_id,
+             amount,
+             payment_method,
+             payment_date,
              ledger_entry:ledger_entry_id (
                 id,
                 entry_date,
+                buyer_id,
+                seller_id,
+                product_id,
                 buyer:buyer_id (id, name),
                 seller:seller_id (id, first_name, last_name),
                 product:product_id (id, name)
@@ -370,9 +405,9 @@
           // veya ayrı ayrı fetch edebilirsiniz.
           // Örnekte ayrı ayrı alıp JS'de topluyoruz.
           const [buyersRes, sellersRes, productsRes] = await Promise.all([
-             window.sb.from('buyers').select('*', { count: 'exact', head: true }),
-             window.sb.from('sellers').select('*', { count: 'exact', head: true }),
-             window.sb.from('products').select('*', { count: 'exact', head: true })
+             window.sb.from('buyers').select('id', { count: 'exact', head: true }),
+             window.sb.from('sellers').select('id', { count: 'exact', head: true }),
+             window.sb.from('products').select('id', { count: 'exact', head: true })
           ]);
           
           return {

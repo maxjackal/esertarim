@@ -267,10 +267,10 @@
 
     return `
       <tr class="border-b border-slate-100">
-        <td class="py-3 pr-4">${item.entry_date || ""}</td>
-        <td class="py-3 pr-4 font-medium">${item.seller_name || ""}</td>
-        <td class="py-3 pr-4">${item.buyer_name || ""}</td>
-        <td class="py-3 pr-4">${item.product_name || ""}</td>
+        <td class="py-3 pr-4">${escapeHtml(item.entry_date || "")}</td>
+        <td class="py-3 pr-4 font-medium">${escapeHtml(item.seller_name || "")}</td>
+        <td class="py-3 pr-4">${escapeHtml(item.buyer_name || "")}</td>
+        <td class="py-3 pr-4">${escapeHtml(item.product_name || "")}</td>
         <td class="py-3 pr-4">${formatNumber(totalAmount)} ₺</td>
         <td class="py-3 pr-4">${formatNumber(paidAmount)} ₺</td>
         <td class="py-3 pr-4 font-semibold">${formatNumber(remainingAmount)} ₺</td>
@@ -343,7 +343,7 @@
       refs.tbody.innerHTML = `
         <tr>
           <td colspan="9" class="py-8 text-center text-rose-600">
-            ${err.message || "Tahsilatlar yüklenemedi."}
+            ${escapeHtml(err.message || "Tahsilatlar yüklenemedi.")}
           </td>
         </tr>
       `;
@@ -429,16 +429,6 @@
       return;
     }
 
-    const payload = {
-      payment_date: paymentDate,
-      amount,
-      payment_method: paymentMethod,
-      note,
-      created_by: "Admin",
-    };
-
-    console.log("POST payload:", payload);
-
     try {
       await window.ApiService.ledgerPayments.create({
         ledger_entry_id: entryID,
@@ -453,7 +443,7 @@
       closePaymentModal();
       await loadCollections();
     } catch (err) {
-      console.error("payment error:", err);
+      window.AppSecurity?.error("payment error:", err);
       toast(err.message || "Ödeme kaydedilemedi.", "error");
     }
   }

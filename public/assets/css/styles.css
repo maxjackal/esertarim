@@ -274,6 +274,12 @@ body.sidebar-collapsed .app-nav-link {
 }
 
 @media (max-width: 960px) {
+    html,
+    body {
+        width: 100%;
+        overflow-x: hidden;
+    }
+
     .app-layout {
         flex-direction: column;
     }
@@ -287,6 +293,31 @@ body.sidebar-collapsed .app-nav-link {
     .app-sidebar {
         height: auto;
         position: relative;
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .app-sidebar__nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .app-sidebar__section-title,
+    .app-sidebar__divider {
+        display: none;
+    }
+
+    .app-nav-link {
+        min-width: 0;
+        padding: 10px;
+        border-radius: 12px;
+        font-size: 13px;
+    }
+
+    .app-nav-link span:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     body.sidebar-collapsed .app-sidebar__title,
@@ -301,11 +332,72 @@ body.sidebar-collapsed .app-nav-link {
     }
 
     .app-content {
-        padding: 16px;
+        padding: 12px;
     }
 
     .app-topbar {
-        padding: 14px 16px;
+        padding: 12px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    .app-topbar__left,
+    .app-topbar__right {
+        min-width: 0;
+    }
+
+    .app-topbar__right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .app-primary-btn {
+        flex: 1;
+    }
+
+    .app-topbar__title {
+        font-size: 18px;
+    }
+
+    .app-topbar__subtitle {
+        display: none;
+    }
+
+    .toast-root {
+        left: 12px;
+        right: 12px;
+        top: 12px;
+    }
+
+    .toast-item {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    .d360-field {
+        min-width: 0 !important;
+    }
+
+    table {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 520px) {
+    .app-sidebar__nav {
+        grid-template-columns: 1fr;
+    }
+
+    .app-icon-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .app-content {
+        padding: 8px;
     }
 }
 .d360-field {

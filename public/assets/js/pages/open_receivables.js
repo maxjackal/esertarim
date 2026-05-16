@@ -25,6 +25,10 @@
   };
 
   function toast(message, type = "info") {
+    if (window.Toast?.show) {
+      window.Toast.show(message, type);
+      return;
+    }
     if (window.showToast) {
       window.showToast(type, message);
       return;

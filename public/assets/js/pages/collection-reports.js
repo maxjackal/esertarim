@@ -26,6 +26,10 @@
   };
 
   function toast(message, type = "info") {
+    if (window.Toast?.show) {
+      window.Toast.show(message, type);
+      return;
+    }
     if (window.showToast) {
       window.showToast(type, message);
       return;
@@ -278,7 +282,7 @@
           <td class="py-3 pr-4">${escapeHtml(item.buyer_name || "")}</td>
           <td class="py-3 pr-4">${escapeHtml(item.product_name || "")}</td>
           <td class="py-3 pr-4 font-semibold text-emerald-600">${formatMoney(item.amount || 0)}</td>
-          <td class="py-3 pr-4">${paymentMethodLabel(item.payment_method)}</td>
+          <td class="py-3 pr-4">${escapeHtml(paymentMethodLabel(item.payment_method))}</td>
           <td class="py-3 pr-4">${escapeHtml(item.note || "")}</td>
           <td class="py-3 pr-4">${escapeHtml(item.created_by || "-")}</td>
         </tr>

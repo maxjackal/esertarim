@@ -10,6 +10,7 @@
   const state = {
     currentItems: [],
   };
+  const escapeHtml = window.AppSecurity?.escapeHtml || ((value) => String(value ?? ""));
 
   function getLedgerId(item) {
     return Number(item.ledger_id || item.ledger?.id || 0);
@@ -49,14 +50,14 @@
   function rowTemplate(item) {
     return `
       <tr class="border-b border-slate-100">
-        <td class="py-3 pr-4 font-medium">${item.buyer_name || ""}</td>
-        <td class="py-3 pr-4">${item.product_name || ""}</td>
+        <td class="py-3 pr-4 font-medium">${escapeHtml(item.buyer_name || "")}</td>
+        <td class="py-3 pr-4">${escapeHtml(item.product_name || "")}</td>
         <td class="py-3 pr-4">${item.entry_count || 0}</td>
         <td class="py-3 pr-4">${item.total_boxes || 0}</td>
         <td class="py-3 pr-4">${formatNumber(item.total_weight)}</td>
         <td class="py-3 pr-4">${formatNumber(item.total_amount)} ₺</td>
         <td class="py-3 pr-4">${formatNumber(item.total_remaining)} ₺</td>
-        <td class="py-3 pr-4">${item.last_entry_date || "-"}</td>
+        <td class="py-3 pr-4">${escapeHtml(item.last_entry_date || "-")}</td>
         <td class="py-3 pr-4">
           <a
             href="/pages/ledger-details?id=${item.id}&product_id=${item.product_id || ""}"

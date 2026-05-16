@@ -78,16 +78,16 @@
   function rowTemplate(item) {
     return `
       <tr class="border-b border-slate-100">
-        <td class="py-3 pr-4">${item.entry_date || ""}</td>
-        <td class="py-3 pr-4 font-medium">${item.buyer_name || ""}</td>
-        <td class="py-3 pr-4">${item.product_name || ""}</td>
+        <td class="py-3 pr-4">${escapeHtml(item.entry_date || "")}</td>
+        <td class="py-3 pr-4 font-medium">${escapeHtml(item.buyer_name || "")}</td>
+        <td class="py-3 pr-4">${escapeHtml(item.product_name || "")}</td>
         <td class="py-3 pr-4">${item.box_count || 0}</td>
         <td class="py-3 pr-4">${formatNumber(item.net_weight)}</td>
         <td class="py-3 pr-4">${formatNumber(item.unit_price)} ₺</td>
         <td class="py-3 pr-4">${formatNumber(item.total_amount)} ₺</td>
         <td class="py-3 pr-4">${formatNumber(item.paid_amount)} ₺</td>
         <td class="py-3 pr-4">${formatNumber(item.remaining_amount)} ₺</td>
-        <td class="py-3 pr-4">${paymentText(item.payment_status)}</td>
+        <td class="py-3 pr-4">${escapeHtml(paymentText(item.payment_status))}</td>
       </tr>
     `;
   }

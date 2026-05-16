@@ -29,6 +29,10 @@ let currentItems = [];
   };
 
   function showToastSafe(type, message) {
+    if (window.Toast?.show) {
+      window.Toast.show(message, type);
+      return;
+    }
     if (typeof window.showToast === "function") {
       window.showToast(type, message);
       return;

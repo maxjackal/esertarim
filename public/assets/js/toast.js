@@ -15,19 +15,28 @@
 
     const toast = document.createElement("div");
     toast.className = `toast-item toast-${type}`;
-    toast.innerHTML = `
-      <div class="toast-item__content">
-        <div class="toast-item__title">${message}</div>
-      </div>
-      <button class="toast-item__close" type="button">×</button>
-    `;
+    const content = document.createElement("div");
+    content.className = "toast-item__content";
+
+    const title = document.createElement("div");
+    title.className = "toast-item__title";
+    title.textContent = String(message ?? "");
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "toast-item__close";
+    closeBtn.type = "button";
+    closeBtn.setAttribute("aria-label", "Bildirimi kapat");
+    closeBtn.textContent = "×";
+
+    content.appendChild(title);
+    toast.append(content, closeBtn);
 
     const close = () => {
       toast.classList.add("toast-item--hide");
       setTimeout(() => toast.remove(), 250);
     };
 
-    toast.querySelector(".toast-item__close")?.addEventListener("click", close);
+    closeBtn.addEventListener("click", close);
 
     root.appendChild(toast);
 

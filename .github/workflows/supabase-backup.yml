@@ -1,0 +1,97 @@
+name: Supabase Daily Backup
+
+on:
+  schedule:
+    # Runs every day at 07:00 Turkey time (04:00 UTC).
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Backup Supabase PostgreSQL to Google Drive
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
+      TZ: Europe/Istanbul
+
+    steps:
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "SUPABASE_DB_URL secret is empty or missing."
+            exit 1
+          fi
+
+          if [ -z "${RCLONE_CONFIG:-}" ]; then
+            echo "RCLONE_CONFIG secret is empty or missing."
+            exit 1
+          fi
+
+      - name: Install PostgreSQL client and rclone
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client rclone
+
+      - name: Configure rclone
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.config/rclone"
+          printf '%s' "$RCLONE_CONFIG" > "$HOME/.config/rclone/rclone.conf"
+          chmod 600 "$HOME/.config/rclone/rclone.conf"
+          rclone listremotes | grep -qx 'gdrive:'
+
+      - name: Create Supabase SQL backup
+        id: backup
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BACKUP_DATE="$(date +'%Y-%m-%d')"
+          BACKUP_FILE="haldb_$(date +'%Y-%m-%d_%H-%M').sql"
+          BACKUP_PATH="backups/${BACKUP_FILE}"
+
+          mkdir -p backups
+
+          pg_dump "$SUPABASE_DB_URL" \
+            --clean \
+            --if-exists \
+            --no-owner \
+            --no-privileges \
+            --file "$BACKUP_PATH"
+
+          test -s "$BACKUP_PATH"
+
+          echo "backup_date=${BACKUP_DATE}" >> "$GITHUB_OUTPUT"
+          echo "backup_file=${BACKUP_FILE}" >> "$GITHUB_OUTPUT"
+          echo "backup_path=${BACKUP_PATH}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload backup to Google Drive
+        shell: bash
+        run: |
+          set -euo pipefail
+          rclone copy backups/ "gdrive:HalTakipBackups/${{ steps.backup.outputs.backup_date }}/"
+
+      - name: Verify Google Drive upload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rclone lsf "gdrive:HalTakipBackups/${{ steps.backup.outputs.backup_date }}/" | grep -Fx "${{ steps.backup.outputs.backup_file }}"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.backup.outputs.backup_file }}
+          path: ${{ steps.backup.outputs.backup_path }}
+          retention-days: 30

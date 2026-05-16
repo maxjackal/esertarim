@@ -27,6 +27,10 @@ paymentMethod: document.getElementById("paymentMethod"),
   let currentPayments = [];
 
   function showToastSafe(type, message) {
+    if (window.Toast?.show) {
+      window.Toast.show(message, type);
+      return;
+    }
     if (typeof window.showToast === "function") {
       window.showToast(type, message);
       return;
@@ -182,7 +186,8 @@ function renderPayments(items) {
           <button
             type="button"
             class="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"
-            onclick="window.cancelPayment(${item.id})"
+            data-action="cancel-payment"
+            data-payment-id="${item.id}"
           >
             İptal Et
           </button>
@@ -195,6 +200,12 @@ function renderPayments(items) {
       `
     )
     .join("");
+
+  tbody.querySelectorAll('[data-action="cancel-payment"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      cancelPayment(Number(btn.getAttribute("data-payment-id") || 0));
+    });
+  });
 }
 
   async function loadEntryDetail() {
@@ -212,7 +223,7 @@ function renderPayments(items) {
   async function loadPayments() {
     const { data, error } = await window.sb
       .from("ledger_payments")
-      .select("*")
+      .select("id,created_at,note,status,ledger_entry_id,amount,payment_method,payment_date")
       .eq("ledger_entry_id", entryId)
       .order("payment_date", { ascending: false });
 

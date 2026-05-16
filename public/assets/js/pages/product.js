@@ -9,6 +9,7 @@
     exportBtn: document.getElementById("exportBtn"),
     tbody: document.getElementById("productTableBody"),
   };
+  const escapeHtml = window.AppSecurity?.escapeHtml || ((value) => String(value ?? ""));
 
   function toast(message, type = "info") {
     if (window.Toast?.show) {
@@ -21,7 +22,7 @@
   function rowTemplate(item) {
     return `
       <tr class="border-b border-slate-100">
-        <td class="py-3 pr-4 font-medium">${item.name}</td>
+        <td class="py-3 pr-4 font-medium">${escapeHtml(item.name)}</td>
         <td class="py-3 pr-4">${item.min_box_weight}</td>
         <td class="py-3 pr-4">${item.max_box_weight}</td>
         <td class="py-3 pr-4">

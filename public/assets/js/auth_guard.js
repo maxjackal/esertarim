@@ -2,7 +2,7 @@
     // Flicker önlemek için sayfayı gizle
     const style = document.createElement('style');
     style.id = 'auth-guard-style';
-    style.innerHTML = 'body { opacity: 0 !important; pointer-events: none !important; transition: opacity 0.2s ease; } body.auth-ready { opacity: 1 !important; pointer-events: auto !important; }';
+    style.textContent = 'body { opacity: 0 !important; pointer-events: none !important; transition: opacity 0.2s ease; } body.auth-ready { opacity: 1 !important; pointer-events: auto !important; }';
     document.head.appendChild(style);
 
     const publicPaths = ['/pages/login.html', '/pages/login', '/giris', '/index.html', '/'];
@@ -41,35 +41,35 @@
             return;
         }
         // Vercel cleanUrls ile tam uyum için .html olmadan yönlendir
-        window.location.replace(targetClean);
+        const isLocalStaticServer = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+        const localTarget = isLocalStaticServer && targetClean.startsWith("/pages/")
+            ? `${targetClean}.html`
+            : targetClean;
+        window.location.replace(localTarget);
     };
 
     try {
         const { data: { session }, error } = await window.sb.auth.getSession();
-        console.log('auth_guard.js - session result:', session ? 'Valid Session' : 'No Session');
-        console.log('auth_guard.js - current path:', currentPath);
 
         if (error) {
-            console.error('auth_guard.js - Session error:', error);
+            window.AppSecurity?.error('auth_guard.js - Session error:', error);
         }
 
         if (session) {
             if (isPublic) {
-                console.log('auth_guard.js - redirect path: /pages/dashboard');
                 safeRedirect('/pages/dashboard');
             } else {
                 showPage();
             }
         } else {
             if (!isPublic) {
-                console.log('auth_guard.js - redirect path: /pages/login');
                 safeRedirect('/pages/login');
             } else {
                 showPage();
             }
         }
     } catch (err) {
-        console.error('auth_guard.js - Error checking session:', err);
+        window.AppSecurity?.error('auth_guard.js - Error checking session:', err);
         if (!isPublic) {
             safeRedirect('/pages/login');
         } else {

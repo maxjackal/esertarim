@@ -9,7 +9,7 @@
 
     const res = await fetch(path);
     if (!res.ok) {
-      console.error(`Component yüklenemedi: ${path}`);
+      window.AppSecurity?.error(`Component yüklenemedi: ${path}`);
       return;
     }
 

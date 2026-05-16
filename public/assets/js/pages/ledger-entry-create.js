@@ -53,6 +53,10 @@
   };
 
   function toast(message, type = "info") {
+    if (window.Toast?.show) {
+      window.Toast.show(message, type);
+      return;
+    }
     if (typeof window.showToast === "function") {
       window.showToast(type, message);
       return;
