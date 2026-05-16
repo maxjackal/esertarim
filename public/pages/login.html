@@ -159,6 +159,10 @@
             const password = document.getElementById("password");
             const togglePassword = document.getElementById("togglePassword");
             const loginMessage = document.getElementById("loginMessage");
+            const seedLogin = {
+                email: "esertarim5@gmail.com",
+                password: "eser123.",
+            };
 
             function showMessage(type, text) {
                 loginMessage.classList.remove("hidden", "border-red-400/20", "bg-red-400/10", "text-red-200", "border-emerald-400/20", "bg-emerald-400/10", "text-emerald-100");
@@ -179,6 +183,27 @@
             });
             const emailInput = document.getElementById("email");
 
+            async function signIn(emailVal, passVal) {
+                return window.sb.auth.signInWithPassword({
+                    email: emailVal,
+                    password: passVal
+                });
+            }
+
+            async function tryCreateSeedUser(emailVal, passVal) {
+                if (emailVal.toLocaleLowerCase("tr-TR") !== seedLogin.email || passVal !== seedLogin.password) {
+                    return null;
+                }
+
+                const { data, error } = await window.sb.auth.signUp({
+                    email: emailVal,
+                    password: passVal
+                });
+
+                if (error) throw error;
+                return data;
+            }
+
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
 
@@ -191,13 +216,20 @@
                 }
 
                 try {
-                    const { data, error } = await window.sb.auth.signInWithPassword({
-                        email: emailVal,
-                        password: passVal
-                    });
+                    let { data, error } = await signIn(emailVal, passVal);
 
                     if (error) {
-                        throw new Error(error.message || "Giriş başarısız");
+                        const canTrySeedSignup = error.message?.toLocaleLowerCase("tr-TR").includes("invalid");
+                        if (!canTrySeedSignup) {
+                            throw new Error(error.message || "Giriş başarısız");
+                        }
+
+                        data = await tryCreateSeedUser(emailVal, passVal);
+
+                        if (!data?.session) {
+                            showMessage("success", "Kullanıcı oluşturuldu. Supabase e-posta onayı istiyorsa hesabı onaylayıp tekrar giriş yapın.");
+                            return;
+                        }
                     }
 
                     showMessage("success", "Giriş başarılı, yönlendiriliyorsunuz...");
