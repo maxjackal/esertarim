@@ -25,6 +25,11 @@
     return text ? text : null;
   };
 
+  const toRequiredString = (value, fallback = "-") => {
+    const text = String(value ?? "").trim();
+    return text ? text : fallback;
+  };
+
   const getPaymentStatus = (totalAmount, paidAmount) => {
     const total = toNumber(totalAmount);
     const paid = toNumber(paidAmount);
@@ -56,7 +61,7 @@
       total_amount: totalAmount,
       remaining_amount: remainingAmount,
       payment_status: getPaymentStatus(totalAmount, paidAmount),
-      note: toNullableString(payload.note),
+      note: toRequiredString(payload.note ?? existing.note),
       weight_warning: Boolean(payload.weight_warning),
     };
   };
