@@ -388,7 +388,7 @@
           seller_name: item.seller ? `${item.seller.first_name} ${item.seller.last_name}` : '',
           buyer_name: item.buyer ? item.buyer.name : '',
           product_name: item.product ? item.product.name : '',
-          entry_date: item.date || item.entry_date
+          entry_date: item.entry_date
       }));
       
       if (filters.only_warnings) {

@@ -201,7 +201,7 @@ function renderPayments(items) {
       item.seller_name = item.seller ? `${item.seller.first_name} ${item.seller.last_name}` : '';
       item.buyer_name = item.buyer ? item.buyer.name : '';
       item.product_name = item.product ? item.product.name : '';
-      item.entry_date = item.date || item.entry_date;
+      item.entry_date = item.entry_date;
       renderEntryDetail(item);
     }
   }

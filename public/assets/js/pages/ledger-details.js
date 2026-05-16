@@ -227,7 +227,7 @@ const ledgerId = queryId || lastPart;
       return {
           ...item,
           seller_name: item.seller ? `${item.seller.first_name} ${item.seller.last_name}` : '',
-          entry_date: item.date || item.entry_date,
+          entry_date: item.entry_date,
           avg_box_weight: item.box_count ? item.net_weight / item.box_count : 0
       };
     });

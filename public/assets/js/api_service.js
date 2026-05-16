@@ -65,10 +65,10 @@
              buyer:buyer_id (id, name),
              seller:seller_id (id, first_name, last_name),
              product:product_id (id, name)
-          `).order('date', { ascending: false });
+          `).order('entry_date', { ascending: false });
           
-          if (filters.startDate) query = query.gte('date', filters.startDate);
-          if (filters.endDate) query = query.lte('date', filters.endDate);
+          if (filters.startDate) query = query.gte('entry_date', filters.startDate);
+          if (filters.endDate) query = query.lte('entry_date', filters.endDate);
           if (filters.buyer_id) query = query.eq('buyer_id', filters.buyer_id);
           if (filters.seller_id) query = query.eq('seller_id', filters.seller_id);
           if (filters.product_id) query = query.eq('product_id', filters.product_id);
@@ -84,7 +84,7 @@
              *,
              ledger_entry:ledger_entry_id (
                 id,
-                date,
+                entry_date,
                 buyer:buyer_id (id, name),
                 seller:seller_id (id, first_name, last_name),
                 product:product_id (id, name)

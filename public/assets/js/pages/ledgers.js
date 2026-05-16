@@ -91,7 +91,7 @@
                   total_weight: 0,
                   total_amount: 0,
                   total_remaining: 0,
-                  last_entry_date: e.date
+                  last_entry_date: e.entry_date
               };
           }
           const group = ledgerGroups[key];
@@ -100,8 +100,8 @@
           group.total_weight += (e.net_weight || 0);
           group.total_amount += (e.total_amount || 0);
           group.total_remaining += (e.remaining_amount || 0);
-          if (new Date(e.date) > new Date(group.last_entry_date)) {
-              group.last_entry_date = e.date;
+          if (new Date(e.entry_date) > new Date(group.last_entry_date)) {
+              group.last_entry_date = e.entry_date;
               group.id = e.id;
           }
       });
