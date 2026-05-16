@@ -33,12 +33,16 @@
       return data;
     },
     create: async (payload) => {
-      const { data, error } = await window.sb.from(tableName).insert([payload]).select();
+      const allowedColumns = tableSchemas[tableName];
+      const sanitized = allowedColumns ? Object.fromEntries(Object.entries(payload).filter(([k]) => allowedColumns.includes(k))) : payload;
+      const { data, error } = await window.sb.from(tableName).insert([sanitized]).select();
       if (error) throw new Error(error.message);
       return data ? data[0] : null;
     },
     update: async (id, payload) => {
-      const { data, error } = await window.sb.from(tableName).update(payload).eq('id', id).select();
+      const allowedColumns = tableSchemas[tableName];
+      const sanitized = allowedColumns ? Object.fromEntries(Object.entries(payload).filter(([k]) => allowedColumns.includes(k))) : payload;
+      const { data, error } = await window.sb.from(tableName).update(sanitized).eq('id', id).select();
       if (error) throw new Error(error.message);
       return data ? data[0] : null;
     },
@@ -48,6 +52,14 @@
       return true;
     }
   });
+
+  const tableSchemas = {
+    buyers: ['id', 'name', 'phone', 'address', 'created_at', 'note'],
+    sellers: ['id', 'first_name', 'last_name', 'phone', 'address', 'created_at', 'note'],
+    products: ['id', 'name', 'created_at', 'min_box_weight', 'max_box_weight'],
+    ledger_entries: ['id', 'created_at', 'buyer_id', 'seller_id', 'product_id', 'box_count', 'net_weight', 'total_amount', 'remaining_amount', 'unit_price', 'paid_amount', 'note', 'weight_warning', 'entry_date'],
+    ledger_payments: ['id', 'created_at', 'note', 'status', 'ledger_entry_id', 'amount', 'payment_method', 'payment_date']
+  };
 
   window.ApiService = {
     products: createCrudMethods('products'),
