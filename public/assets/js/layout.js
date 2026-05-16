@@ -53,6 +53,22 @@
     });
   }
 
+  function bindLogout() {
+    const btn = document.getElementById("logoutBtn");
+    if (!btn) return;
+
+    btn.addEventListener("click", async () => {
+      btn.setAttribute("disabled", "disabled");
+      try {
+        if (window.sb?.auth) {
+          await window.sb.auth.signOut();
+        }
+      } finally {
+        window.location.replace("/pages/login");
+      }
+    });
+  }
+
   async function initLayout() {
     await Promise.all([
       loadComponent("#sidebarMount", SIDEBAR_PATH),
@@ -63,6 +79,7 @@
     setPageTitleFromBody();
     setActiveNav();
     bindSidebarToggle();
+    bindLogout();
   }
 
   document.addEventListener("DOMContentLoaded", initLayout);

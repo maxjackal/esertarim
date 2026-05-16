@@ -55,15 +55,15 @@
 
         if (session) {
             if (isPublic) {
-                console.log('auth_guard.js - redirect path: /pages/dashboard.html');
-                safeRedirect('/pages/dashboard.html');
+                console.log('auth_guard.js - redirect path: /pages/dashboard');
+                safeRedirect('/pages/dashboard');
             } else {
                 showPage();
             }
         } else {
             if (!isPublic) {
-                console.log('auth_guard.js - redirect path: /pages/login.html');
-                safeRedirect('/pages/login.html');
+                console.log('auth_guard.js - redirect path: /pages/login');
+                safeRedirect('/pages/login');
             } else {
                 showPage();
             }
@@ -71,7 +71,7 @@
     } catch (err) {
         console.error('auth_guard.js - Error checking session:', err);
         if (!isPublic) {
-            safeRedirect('/pages/login.html');
+            safeRedirect('/pages/login');
         } else {
             showPage();
         }

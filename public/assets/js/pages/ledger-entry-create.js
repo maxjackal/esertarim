@@ -438,8 +438,10 @@ function getSummaryValues() {
       payload.total_amount = payload.net_weight * payload.unit_price;
       payload.remaining_amount = Math.max(payload.total_amount - payload.paid_amount, 0);
       payload.weight_warning = isWeightWarning;
+      payload.avg_box_weight = payload.box_count > 0 ? payload.net_weight / payload.box_count : 0;
 
-      const data = await window.ApiService.ledgerEntries.create(payload);
+      const { force_save: _forceSave, ...dbPayload } = payload;
+      const data = await window.ApiService.ledgerEntries.create(dbPayload);
 
       if (!data) {
         throw new Error("Kayıt oluşturulamadı");

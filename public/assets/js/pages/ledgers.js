@@ -46,7 +46,7 @@
         <td class="py-3 pr-4">${item.last_entry_date || "-"}</td>
         <td class="py-3 pr-4">
           <a
-            href="/pages/ledger-detail.html?id=${item.id}"
+            href="/pages/ledger-detail?id=${item.id}"
             class="inline-flex rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             Detay

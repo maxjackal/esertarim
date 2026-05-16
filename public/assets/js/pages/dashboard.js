@@ -188,7 +188,7 @@
             <td class="py-3 pr-4 font-semibold text-amber-600">${formatMoney(item.remaining_amount || 0)}</td>
             <td class="py-3 pr-4">
               <a
-                href="/pages/ledger_detail.html?id=${item.id}"
+                href="/pages/ledger-detail?id=${item.id}"
                 class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
               >
                 Detay

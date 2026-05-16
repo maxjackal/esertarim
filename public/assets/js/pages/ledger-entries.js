@@ -72,7 +72,7 @@
     // window.location.href = `/defter/${id}`;
 
     // Sayfa tabanlı kullanım için:
-    window.location.href = `/pages/ledger-detail.html?id=${id}`;
+    window.location.href = `/pages/ledger-detail?id=${id}`;
   }
 
   function formatNumber(value, fractionDigits = 2) {
@@ -501,6 +501,9 @@
       box_count: Number(refs.editBoxCount.value || 0),
       net_weight: Number(refs.editNetWeight.value || 0),
       unit_price: Number(refs.editUnitPrice.value || 0),
+      avg_box_weight: Number(refs.editBoxCount.value || 0) > 0
+        ? Number(refs.editNetWeight.value || 0) / Number(refs.editBoxCount.value || 0)
+        : 0,
       note: refs.editNote.value.trim(),
       force_save: forceSave,
     };
@@ -512,7 +515,8 @@
     try {
       // NOTE: We don't have the requires_confirmation / 409 logic via ApiService since it's client-side Supabase,
       // So we just update directly unless we recreate the check. For now, assume it's valid.
-      const data = await window.ApiService.ledgerEntries.update(id, payload);
+      const { force_save: _forceSave, ...dbPayload } = payload;
+      const data = await window.ApiService.ledgerEntries.update(id, dbPayload);
 
       if (!data) {
         throw new Error("Güncelleme başarısız");

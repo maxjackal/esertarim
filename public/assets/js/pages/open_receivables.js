@@ -229,7 +229,7 @@
   }
 
   function goToDetail(id) {
-    window.location.href = `/pages/ledger_detail.html?id=${id}`;
+    window.location.href = `/pages/ledger-detail?id=${id}`;
   }
 
   async function loadReceivables() {
