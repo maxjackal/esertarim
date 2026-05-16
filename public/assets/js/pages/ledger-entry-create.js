@@ -370,7 +370,6 @@ function getSummaryValues() {
       net_weight: Number(refs.netWeight?.value || 0),
       unit_price: Number(refs.unitPrice?.value || 0),
       paid_amount: Number(refs.paidAmount?.value || 0),
-      paid_amount: 0,
       note: "",
       force_save: forceSave,
     };

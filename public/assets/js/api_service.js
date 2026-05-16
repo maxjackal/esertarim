@@ -1,4 +1,23 @@
 (() => {
+  const logSupabaseError = (error) => {
+    console.error("Supabase error:", {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
+  };
+
+  const sanitizePayload = (tableName, payload) => {
+    const cleaned = { ...payload };
+    for (const [k, v] of Object.entries(cleaned)) {
+      if (v === "") cleaned[k] = null;
+    }
+    const allowedColumns = tableSchemas[tableName];
+    if (!allowedColumns) return cleaned;
+    return Object.fromEntries(Object.entries(cleaned).filter(([k]) => allowedColumns.includes(k)));
+  };
+
   const createCrudMethods = (tableName) => ({
     getAll: async (queryParams = {}) => {
       let query = window.sb.from(tableName).select('*');
@@ -24,31 +43,70 @@
       }
 
       const { data, error } = await query;
-      if (error) throw new Error(error.message);
+      if (error) {
+        logSupabaseError(error);
+        throw new Error(error.message);
+      }
       return { items: data || [] };
     },
     getById: async (id) => {
       const { data, error } = await window.sb.from(tableName).select('*').eq('id', id).single();
-      if (error) throw new Error(error.message);
+      if (error) {
+        logSupabaseError(error);
+        throw new Error(error.message);
+      }
       return data;
     },
     create: async (payload) => {
-      const allowedColumns = tableSchemas[tableName];
-      const sanitized = allowedColumns ? Object.fromEntries(Object.entries(payload).filter(([k]) => allowedColumns.includes(k))) : payload;
+      // Otomatik ledger oluşturma mantığı
+      if (tableName === 'ledger_entries' && !payload.ledger_id && payload.buyer_id) {
+         let ledgerRes = await window.sb.from('ledgers').select('id').eq('buyer_id', payload.buyer_id).limit(1);
+         if (ledgerRes.data && ledgerRes.data.length > 0) {
+            payload.ledger_id = ledgerRes.data[0].id;
+         } else {
+            let newLedger = await window.sb.from('ledgers').insert([{ buyer_id: payload.buyer_id }]).select();
+            if (newLedger.data && newLedger.data.length > 0) {
+               payload.ledger_id = newLedger.data[0].id;
+            }
+         }
+      }
+
+      const sanitized = sanitizePayload(tableName, payload);
       const { data, error } = await window.sb.from(tableName).insert([sanitized]).select();
-      if (error) throw new Error(error.message);
+      if (error) {
+        logSupabaseError(error);
+        throw new Error(error.message);
+      }
       return data ? data[0] : null;
     },
     update: async (id, payload) => {
-      const allowedColumns = tableSchemas[tableName];
-      const sanitized = allowedColumns ? Object.fromEntries(Object.entries(payload).filter(([k]) => allowedColumns.includes(k))) : payload;
+      // Otomatik ledger ID güncelleme (buyer_id değişirse)
+      if (tableName === 'ledger_entries' && payload.buyer_id) {
+         let ledgerRes = await window.sb.from('ledgers').select('id').eq('buyer_id', payload.buyer_id).limit(1);
+         if (ledgerRes.data && ledgerRes.data.length > 0) {
+            payload.ledger_id = ledgerRes.data[0].id;
+         } else {
+            let newLedger = await window.sb.from('ledgers').insert([{ buyer_id: payload.buyer_id }]).select();
+            if (newLedger.data && newLedger.data.length > 0) {
+               payload.ledger_id = newLedger.data[0].id;
+            }
+         }
+      }
+
+      const sanitized = sanitizePayload(tableName, payload);
       const { data, error } = await window.sb.from(tableName).update(sanitized).eq('id', id).select();
-      if (error) throw new Error(error.message);
+      if (error) {
+        logSupabaseError(error);
+        throw new Error(error.message);
+      }
       return data ? data[0] : null;
     },
     delete: async (id) => {
       const { error } = await window.sb.from(tableName).delete().eq('id', id);
-      if (error) throw new Error(error.message);
+      if (error) {
+        logSupabaseError(error);
+        throw new Error(error.message);
+      }
       return true;
     }
   });
@@ -57,7 +115,8 @@
     buyers: ['id', 'name', 'phone', 'address', 'created_at', 'note'],
     sellers: ['id', 'first_name', 'last_name', 'phone', 'address', 'created_at', 'note'],
     products: ['id', 'name', 'created_at', 'min_box_weight', 'max_box_weight'],
-    ledger_entries: ['id', 'created_at', 'buyer_id', 'seller_id', 'product_id', 'box_count', 'net_weight', 'total_amount', 'remaining_amount', 'unit_price', 'paid_amount', 'note', 'weight_warning', 'entry_date'],
+    ledgers: ['id', 'buyer_id', 'created_at'],
+    ledger_entries: ['id', 'ledger_id', 'created_at', 'buyer_id', 'seller_id', 'product_id', 'box_count', 'net_weight', 'total_amount', 'remaining_amount', 'unit_price', 'paid_amount', 'note', 'weight_warning', 'entry_date'],
     ledger_payments: ['id', 'created_at', 'note', 'status', 'ledger_entry_id', 'amount', 'payment_method', 'payment_date']
   };
 
@@ -65,6 +124,7 @@
     products: createCrudMethods('products'),
     buyers: createCrudMethods('buyers'),
     sellers: createCrudMethods('sellers'),
+    ledgers: createCrudMethods('ledgers'),
     ledgerEntries: createCrudMethods('ledger_entries'),
     ledgerPayments: createCrudMethods('ledger_payments'),
     
