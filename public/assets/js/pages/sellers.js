@@ -36,6 +36,16 @@
     `;
   }
 
+  function buildPayload() {
+    const payload = {
+      first_name: refs.firstName.value.trim(),
+      last_name: refs.lastName.value.trim(),
+      phone: refs.phone.value.trim(),
+    };
+
+    return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== ""));
+  }
+
   async function loadSellers() {
     try {
       const data = await window.ApiService.sellers.getAll();
@@ -63,15 +73,20 @@
   refs.form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const payload = {
-      first_name: refs.firstName.value.trim(),
-      last_name: refs.lastName.value.trim(),
-      phone: refs.phone.value.trim(),
-      address: "",
-      note: "",
-    };
+    const payload = buildPayload();
+    if (!payload.first_name && !payload.last_name) {
+      toast("Satıcı adı veya soyadı zorunludur", "warning");
+      refs.firstName.focus();
+      return;
+    }
 
     try {
+      const submitBtn = refs.form.querySelector('button[type="submit"], button:not([type])');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add("opacity-60", "pointer-events-none");
+      }
+
       await window.ApiService.sellers.create(payload);
 
       refs.form.reset();
@@ -79,6 +94,12 @@
       await loadSellers();
     } catch (err) {
       toast(err.message, "error");
+    } finally {
+      const submitBtn = refs.form.querySelector('button[type="submit"], button:not([type])');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("opacity-60", "pointer-events-none");
+      }
     }
   });
 

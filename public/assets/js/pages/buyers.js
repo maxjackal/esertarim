@@ -39,6 +39,16 @@ function toast(message, type = "info") {
     `;
   }
 
+  function buildPayload() {
+    const payload = {
+      name: refs.name.value.trim(),
+      phone: refs.phone.value.trim(),
+      plate_no: refs.plateNo.value.trim(),
+    };
+
+    return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== ""));
+  }
+
   async function loadBuyers() {
     try {
       const data = await window.ApiService.buyers.getAll();
@@ -66,15 +76,20 @@ function toast(message, type = "info") {
   refs.form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const payload = {
-      name: refs.name.value.trim(),
-      phone: refs.phone.value.trim(),
-      plate_no: refs.plateNo.value.trim(),
-      address: "",
-      note: "",
-    };
+    const payload = buildPayload();
+    if (!payload.name) {
+      toast("Alıcı adı zorunludur", "warning");
+      refs.name.focus();
+      return;
+    }
 
     try {
+      const submitBtn = refs.form.querySelector('button[type="submit"], button:not([type])');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add("opacity-60", "pointer-events-none");
+      }
+
       await window.ApiService.buyers.create(payload);
 
       refs.form.reset();
@@ -82,6 +97,12 @@ function toast(message, type = "info") {
       await loadBuyers();
     } catch (err) {
       toast(err.message, "error");
+    } finally {
+      const submitBtn = refs.form.querySelector('button[type="submit"], button:not([type])');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("opacity-60", "pointer-events-none");
+      }
     }
   });
 
