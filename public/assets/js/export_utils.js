@@ -103,9 +103,36 @@
     };
     ws["!pageSetup"] = {
       orientation: "landscape",
+      fitToPage: true,
       fitToWidth: 1,
       fitToHeight: 0,
+      paperSize: 9,
     };
+    ws["!margins"] = {
+      left: 0.25,
+      right: 0.25,
+      top: 0.5,
+      bottom: 0.5,
+      header: 0.2,
+      footer: 0.2,
+    };
+  }
+
+  function getColumnWidth(rows, columns, index, header, options = {}) {
+    const col = columns[index] || {};
+    if (col.width) return { wch: col.width };
+
+    const minWidth = col.minWidth || options.minColumnWidth || 8;
+    const maxWidth = col.maxWidth || options.maxColumnWidth || 22;
+    const contentWidth = Math.max(
+      String(header).length + 2,
+      ...rows.map((row) => String(
+        typeof col.value === "function" ? col.value(row) : row?.[col.key] ?? ""
+      ).length + 2),
+      minWidth
+    );
+
+    return { wch: Math.min(contentWidth, maxWidth) };
   }
 
   function sheetFromRows(rows, columns, options = {}) {
@@ -127,15 +154,7 @@
         ws[ref] = { ...ws[ref], ...cell };
       });
     });
-    ws["!cols"] = headers.map((header, index) => ({
-      wch: Math.max(
-        String(header).length + 2,
-        ...rows.map((row) => String(
-          typeof columns[index].value === "function" ? columns[index].value(row) : row?.[columns[index].key] ?? ""
-        ).length + 2),
-        12
-      ),
-    }));
+    ws["!cols"] = headers.map((header, index) => getColumnWidth(rows, columns, index, header, options));
     if (rows.length) {
       ws["!autofilter"] = { ref: window.XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: headers.length - 1 } }) };
     }

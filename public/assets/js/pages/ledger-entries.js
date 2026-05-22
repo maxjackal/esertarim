@@ -700,21 +700,22 @@
         window.ExcelExportUtils.exportRowsToExcel(
           state.currentItems,
           [
-            { label: "Tarih", key: "entry_date", type: "date" },
-            { label: "Satıcı", key: "seller_name" },
-            { label: "Alıcı", key: "buyer_name" },
-            { label: "Ürün", key: "product_name" },
-            { label: "Kasa", key: "box_count", type: "integer" },
-            { label: "Kilo", key: "net_weight", type: "number" },
-            { label: "Birim Fiyat", key: "unit_price", type: "money" },
-            { label: "Toplam", key: "total_amount", type: "money" },
-            { label: "Tahsil Edilen", key: "paid_amount", type: "money" },
-            { label: "Kalan", key: "remaining_amount", type: "money" },
-            { label: "Durum", value: (row) => paymentStatusText(row.payment_status) },
-            { label: "Uyarı", value: (row) => row.weight_warning ? "Uyarılı" : "" },
+            { label: "Tarih", key: "entry_date", type: "date", width: 11 },
+            { label: "Satıcı", key: "seller_name", width: 16 },
+            { label: "Alıcı", key: "buyer_name", width: 16 },
+            { label: "Ürün", key: "product_name", width: 14 },
+            { label: "Kasa", key: "box_count", type: "integer", width: 8 },
+            { label: "Kilo", key: "net_weight", type: "number", width: 10 },
+            { label: "Birim Fiyat", key: "unit_price", type: "money", width: 12 },
+            { label: "Toplam", key: "total_amount", type: "money", width: 12 },
+            { label: "Tahsil Edilen", key: "paid_amount", type: "money", width: 13 },
+            { label: "Kalan", key: "remaining_amount", type: "money", width: 12 },
+            { label: "Durum", value: (row) => paymentStatusText(row.payment_status), width: 12 },
+            { label: "Uyarı", value: (row) => row.weight_warning ? "Uyarılı" : "", width: 9 },
           ],
           state.ledgerId ? `defter-${state.ledgerId}-kayitlari.xlsx` : "defter-kayitlari.xlsx",
-          "Kayıtlar"
+          "Kayıtlar",
+          { maxColumnWidth: 16 }
         );
       } catch (err) {
         toast(err.message, "error");
