@@ -137,7 +137,11 @@
 
   function sheetFromRows(rows, columns, options = {}) {
     const headers = columns.map((col) => col.label);
-    const aoa = [headers];
+    const watermarkText = options.watermarkText ?? DEFAULT_WATERMARK;
+    const watermark = String(watermarkText || "").trim();
+    const hasVisibleWatermark = watermark && options.visibleWatermark !== false;
+    const headerRowIndex = hasVisibleWatermark ? 1 : 0;
+    const aoa = hasVisibleWatermark ? [[watermark], headers] : [headers];
 
     rows.forEach((row) => {
       aoa.push(columns.map((col) => {
@@ -154,11 +158,23 @@
         ws[ref] = { ...ws[ref], ...cell };
       });
     });
+    if (hasVisibleWatermark && headers.length) {
+      ws["!merges"] = [
+        ...(ws["!merges"] || []),
+        { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } },
+      ];
+      ws["!rows"] = [{ hpt: 24 }];
+    }
     ws["!cols"] = headers.map((header, index) => getColumnWidth(rows, columns, index, header, options));
     if (rows.length) {
-      ws["!autofilter"] = { ref: window.XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: headers.length - 1 } }) };
+      ws["!autofilter"] = {
+        ref: window.XLSX.utils.encode_range({
+          s: { r: headerRowIndex, c: 0 },
+          e: { r: headerRowIndex + rows.length, c: headers.length - 1 },
+        }),
+      };
     }
-    applyWatermark(ws, options.watermarkText ?? DEFAULT_WATERMARK);
+    applyWatermark(ws, watermarkText);
     return ws;
   }
 
