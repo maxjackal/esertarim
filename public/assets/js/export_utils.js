@@ -4,7 +4,7 @@
   const NUMBER_FORMAT = "#,##0.00";
   const INTEGER_FORMAT = "#,##0";
   const DATE_FORMAT = "yyyy-mm-dd";
-  const DEFAULT_WATERMARK = "ESER TARIM";
+  const DEFAULT_WATERMARK = "ESER TARIM YUSUF ESER";
 
   function ensureXlsx() {
     if (!window.XLSX) {
