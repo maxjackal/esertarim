@@ -105,6 +105,17 @@
     return state.products.find((x) => Number(x.id) === productId) || null;
   }
 
+  function getSelectedBuyer() {
+    const buyerId = Number(refs.buyerId?.value || 0);
+    return state.buyers.find((x) => Number(x.id) === buyerId) || null;
+  }
+
+  function getLedgerTitle() {
+    const buyerName = getSelectedBuyer()?.name || refs.buyerId?.selectedOptions?.[0]?.textContent || "";
+    const productName = getSelectedProduct()?.name || refs.productId?.selectedOptions?.[0]?.textContent || "";
+    return [buyerName, productName].map((x) => String(x).trim()).filter(Boolean).join(" / ");
+  }
+
 
 
   function fillSelect(selectEl, items, placeholder, labelFn) {
@@ -370,6 +381,7 @@ function getSummaryValues() {
       seller_id: Number(refs.sellerId?.value || 0),
       buyer_id: Number(refs.buyerId?.value || 0),
       product_id: Number(refs.productId?.value || 0),
+      ledger_title: getLedgerTitle(),
       box_count: Number(refs.boxCount?.value || 0),
       net_weight: Number(refs.netWeight?.value || 0),
       unit_price: Number(refs.unitPrice?.value || 0),

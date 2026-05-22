@@ -85,7 +85,13 @@
     return Object.fromEntries(Object.entries(cleaned).filter(([k]) => allowedColumns.includes(k)));
   };
 
-  const getOrCreateLedger = async ({ buyer_id, product_id }) => {
+  const buildLedgerTitle = ({ buyer_id, product_id, ledger_title }) => {
+    const title = toNullableString(ledger_title);
+    if (title) return title;
+    return `Alıcı #${buyer_id} / Ürün #${product_id}`;
+  };
+
+  const getOrCreateLedger = async ({ buyer_id, product_id, ledger_title }) => {
     const buyerId = toNullableNumber(buyer_id);
     const productId = toNullableNumber(product_id);
 
@@ -115,6 +121,7 @@
     const newLedgerPayload = sanitizePayload("ledgers", {
       buyer_id: buyerId,
       product_id: productId,
+      title: buildLedgerTitle({ buyer_id: buyerId, product_id: productId, ledger_title }),
     });
 
     const newLedger = await window.sb.from("ledgers").insert([newLedgerPayload]).select("id").single();
@@ -304,7 +311,7 @@
     buyers: ['id', 'name', 'phone', 'plate_no', 'address', 'created_at', 'note'],
     sellers: ['id', 'first_name', 'last_name', 'phone', 'address', 'created_at', 'note'],
     products: ['id', 'name', 'created_at', 'min_box_weight', 'max_box_weight'],
-    ledgers: ['id', 'buyer_id', 'product_id', 'created_at'],
+    ledgers: ['id', 'buyer_id', 'product_id', 'title', 'created_at'],
     ledger_entries: ['id', 'ledger_id', 'created_at', 'buyer_id', 'seller_id', 'product_id', 'box_count', 'net_weight', 'avg_box_weight', 'total_amount', 'remaining_amount', 'unit_price', 'paid_amount', 'payment_status', 'note', 'weight_warning', 'entry_date'],
     ledger_payments: ['id', 'created_at', 'note', 'status', 'ledger_entry_id', 'amount', 'payment_method', 'payment_date']
   };
@@ -313,7 +320,7 @@
     buyers: 'id,name,phone,plate_no,address,created_at,note',
     sellers: 'id,first_name,last_name,phone,address,created_at,note',
     products: 'id,name,created_at,min_box_weight,max_box_weight',
-    ledgers: 'id,buyer_id,product_id,created_at',
+    ledgers: 'id,buyer_id,product_id,title,created_at',
     ledger_entries: 'id,ledger_id,created_at,buyer_id,seller_id,product_id,box_count,net_weight,avg_box_weight,total_amount,remaining_amount,unit_price,paid_amount,payment_status,note,weight_warning,entry_date',
     ledger_payments: 'id,created_at,note,status,ledger_entry_id,amount,payment_method,payment_date'
   };

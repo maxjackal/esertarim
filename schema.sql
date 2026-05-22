@@ -4,12 +4,31 @@
 alter table if exists public.ledgers
   add column if not exists product_id bigint;
 
+alter table if exists public.ledgers
+  add column if not exists title text;
+
+update public.ledgers l
+set title = concat_ws(' / ', b.name, p.name)
+from public.buyers b, public.products p
+where l.buyer_id = b.id
+  and l.product_id = p.id
+  and nullif(trim(coalesce(l.title, '')), '') is null;
+
+update public.ledgers
+set title = concat('Defter #', id)
+where nullif(trim(coalesce(title, '')), '') is null;
+
+alter table if exists public.ledgers
+  alter column title set not null;
+
 alter table if exists public.ledger_entries
   add column if not exists ledger_id bigint;
 
-insert into public.ledgers (buyer_id, product_id)
-select distinct le.buyer_id, le.product_id
+insert into public.ledgers (buyer_id, product_id, title)
+select distinct le.buyer_id, le.product_id, concat_ws(' / ', b.name, p.name)
 from public.ledger_entries le
+left join public.buyers b on b.id = le.buyer_id
+left join public.products p on p.id = le.product_id
 where le.buyer_id is not null
   and le.product_id is not null
   and not exists (
