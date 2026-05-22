@@ -46,12 +46,31 @@ body.sidebar-collapsed .app-sidebar-wrap {
     height: 100vh;
     position: sticky;
     top: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     background: #0f172a;
     color: white;
     padding: 20px 16px;
     display: flex;
     flex-direction: column;
     gap: 18px;
+}
+
+.app-sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.app-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.app-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.45);
+    border-radius: 999px;
+}
+
+.app-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(203, 213, 225, 0.62);
 }
 
 .app-sidebar__brand {
