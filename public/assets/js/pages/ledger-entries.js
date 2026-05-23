@@ -24,6 +24,7 @@
     buyerFilter: $("buyerFilter"),
     productFilter: $("productFilter"),
     onlyWarnings: $("onlyWarnings"),
+    todayBtn: $("todayBtn"),
     filterBtn: $("filterBtn"),
     clearBtn: $("clearBtn"),
     exportBtn: $("exportBtn"),
@@ -146,6 +147,11 @@
     const mm = String(today.getMonth() + 1).padStart(2, "0");
     const dd = String(today.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function isTodayFilterActive() {
+    const today = todayAsInputValue();
+    return refs.fromDate?.value === today && refs.toDate?.value === today;
   }
 
 
@@ -695,6 +701,13 @@
   function bindStaticEvents() {
     refs.filterBtn?.addEventListener("click", loadEntries);
 
+    refs.todayBtn?.addEventListener("click", async () => {
+      const today = todayAsInputValue();
+      if (refs.fromDate) refs.fromDate.value = today;
+      if (refs.toDate) refs.toDate.value = today;
+      await loadEntries();
+    });
+
     refs.exportBtn?.addEventListener("click", () => {
       try {
         window.ExcelExportUtils.exportRowsToExcel(
@@ -713,7 +726,9 @@
             { label: "Durum", value: (row) => paymentStatusText(row.payment_status), width: 12 },
             { label: "Uyarı", value: (row) => row.weight_warning ? "Uyarılı" : "", width: 9 },
           ],
-          state.ledgerId ? `defter-${state.ledgerId}-kayitlari.xlsx` : "defter-kayitlari.xlsx",
+          isTodayFilterActive()
+            ? (state.ledgerId ? `defter-${state.ledgerId}-bugun-kayitlari.xlsx` : "defter-bugun-kayitlari.xlsx")
+            : (state.ledgerId ? `defter-${state.ledgerId}-kayitlari.xlsx` : "defter-kayitlari.xlsx"),
           "Kayıtlar",
           { maxColumnWidth: 16 }
         );

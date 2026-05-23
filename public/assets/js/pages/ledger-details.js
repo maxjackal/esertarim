@@ -19,6 +19,7 @@ let currentItems = [];
 
     fromDate: document.getElementById("fromDate"),
     toDate: document.getElementById("toDate"),
+    todayBtn: document.getElementById("todayBtn"),
     filterBtn: document.getElementById("filterBtn"),
     clearFilterBtn: document.getElementById("clearFilterBtn"),
 
@@ -103,6 +104,19 @@ let currentItems = [];
     if (to) params.set("to", to);
 
     return params.toString();
+  }
+
+  function todayAsInputValue() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function isTodayFilterActive() {
+    const today = todayAsInputValue();
+    return els.fromDate?.value === today && els.toDate?.value === today;
   }
 
   function renderSummary(summary) {
@@ -290,11 +304,17 @@ let currentItems = [];
 
     try {
       if (type === "csv") {
-        window.ExcelExportUtils.exportRowsToCsv(currentItems, columns, `defter-detayi-${ledgerId}.csv`, "Defter Detayı");
+        const csvFileName = isTodayFilterActive()
+          ? `defter-detayi-${ledgerId}-bugun.csv`
+          : `defter-detayi-${ledgerId}.csv`;
+        window.ExcelExportUtils.exportRowsToCsv(currentItems, columns, csvFileName, "Defter Detayı");
         return;
       }
 
-      window.ExcelExportUtils.exportRowsToExcel(currentItems, columns, `defter-detayi-${ledgerId}.xlsx`, "Defter Detayı", { maxColumnWidth: 16 });
+      const excelFileName = isTodayFilterActive()
+        ? `defter-detayi-${ledgerId}-bugun.xlsx`
+        : `defter-detayi-${ledgerId}.xlsx`;
+      window.ExcelExportUtils.exportRowsToExcel(currentItems, columns, excelFileName, "Defter Detayı", { maxColumnWidth: 16 });
     } catch (err) {
       showToastSafe("error", err.message || "Dışa aktarma başarısız");
     }
@@ -307,6 +327,14 @@ let currentItems = [];
     } catch (err) {
       showToastSafe("error", err.message || "Defter detayı yüklenemedi");
     }
+  }
+
+  async function handleTodayFilter() {
+    const today = todayAsInputValue();
+    if (els.fromDate) els.fromDate.value = today;
+    if (els.toDate) els.toDate.value = today;
+
+    await handleFilter();
   }
 
   async function handleClearFilter() {
@@ -329,6 +357,7 @@ let currentItems = [];
 
     hydrateFiltersFromUrl();
 
+    els.todayBtn?.addEventListener("click", handleTodayFilter);
     els.filterBtn?.addEventListener("click", handleFilter);
     els.clearFilterBtn?.addEventListener("click", handleClearFilter);
     els.exportCsvBtn?.addEventListener("click", () => exportFile("csv"));
