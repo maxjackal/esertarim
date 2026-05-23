@@ -156,9 +156,9 @@
     </div>
 
     <!-- Edit Modal -->
-    <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 p-4">
-        <div class="mx-auto mt-8 w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+    <div id="editModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/40 p-4">
+        <div class="mx-auto flex max-h-[calc(100vh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div class="flex flex-shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
                     <h3 class="text-lg font-bold text-slate-900">Kayıt Düzenle</h3>
                     <p class="mt-1 text-sm text-slate-500">
@@ -172,7 +172,7 @@
                 </button>
             </div>
 
-            <form id="editForm" class="px-5 py-5">
+            <form id="editForm" class="min-h-0 overflow-y-auto px-5 py-5">
                 <input id="editId" type="hidden" />
 
                 <div id="editWarningBox"
@@ -249,9 +249,9 @@
     </div>
 
     <!-- Payment Modal -->
-    <div id="paymentModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 p-4">
-        <div class="mx-auto mt-8 w-full max-w-xl rounded-2xl bg-white shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+    <div id="paymentModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/50 p-4">
+        <div class="mx-auto flex max-h-[calc(100vh-2rem)] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div class="flex flex-shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
                     <h3 class="text-lg font-bold text-slate-900">Tahsilat Al</h3>
                     <p class="mt-1 text-sm text-slate-500">
@@ -265,7 +265,7 @@
                 </button>
             </div>
 
-            <form id="paymentForm" class="px-5 py-5">
+            <form id="paymentForm" class="min-h-0 overflow-y-auto px-5 py-5">
                 <input id="paymentEntryId" type="hidden" />
 
                 <div class="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">

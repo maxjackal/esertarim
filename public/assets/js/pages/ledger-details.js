@@ -119,6 +119,15 @@ let currentItems = [];
     return els.fromDate?.value === today && els.toDate?.value === today;
   }
 
+  function exportDateForFileName() {
+    if (window.ExcelExportUtils?.formatTurkishDate) {
+      return window.ExcelExportUtils.formatTurkishDate();
+    }
+
+    const [yyyy, mm, dd] = todayAsInputValue().split("-");
+    return `${dd}.${mm}.${yyyy}`;
+  }
+
   function renderSummary(summary) {
     els.summaryBuyerName.textContent = summary?.buyer_name || "-";
     els.summaryProductName.textContent = summary?.product_name || "-";
@@ -303,18 +312,25 @@ let currentItems = [];
     ];
 
     try {
+      const exportDate = exportDateForFileName();
       if (type === "csv") {
         const csvFileName = isTodayFilterActive()
-          ? `defter-detayi-${ledgerId}-bugun.csv`
-          : `defter-detayi-${ledgerId}.csv`;
+          ? `defter-detayi-${ledgerId}-bugun-${exportDate}.csv`
+          : `defter-detayi-${ledgerId}-${exportDate}.csv`;
         window.ExcelExportUtils.exportRowsToCsv(currentItems, columns, csvFileName, "Defter Detayı");
         return;
       }
 
       const excelFileName = isTodayFilterActive()
-        ? `defter-detayi-${ledgerId}-bugun.xlsx`
-        : `defter-detayi-${ledgerId}.xlsx`;
-      window.ExcelExportUtils.exportRowsToExcel(currentItems, columns, excelFileName, "Defter Detayı", { maxColumnWidth: 16 });
+        ? `defter-detayi-${ledgerId}-bugun-${exportDate}.xlsx`
+        : `defter-detayi-${ledgerId}-${exportDate}.xlsx`;
+      window.ExcelExportUtils.exportRowsToExcel(
+        currentItems,
+        columns,
+        excelFileName,
+        "Defter Detayı",
+        { maxColumnWidth: 16, visibleExportDate: true, exportDateText: exportDate }
+      );
     } catch (err) {
       showToastSafe("error", err.message || "Dışa aktarma başarısız");
     }

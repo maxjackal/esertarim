@@ -52,6 +52,13 @@
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
+  function formatTurkishDate(date = new Date()) {
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    return `${dd}.${mm}.${yyyy}`;
+  }
+
   function inferCell(value, explicitType) {
     if (value === null || value === undefined || value === "") return { v: "" };
     if (value instanceof Date) return { v: value, t: "d", z: DATE_FORMAT };
@@ -140,8 +147,20 @@
     const watermarkText = options.watermarkText ?? DEFAULT_WATERMARK;
     const watermark = String(watermarkText || "").trim();
     const hasVisibleWatermark = watermark && options.visibleWatermark !== false;
+    const exportDateText = options.visibleExportDate ? String(options.exportDateText || formatTurkishDate()).trim() : "";
+    const hasExportDate = Boolean(exportDateText);
     const headerRowIndex = hasVisibleWatermark ? 1 : 0;
-    const aoa = hasVisibleWatermark ? [[watermark], headers] : [headers];
+    const topRow = [];
+
+    if (hasVisibleWatermark) {
+      topRow[0] = watermark;
+
+      if (hasExportDate && headers.length) {
+        topRow[headers.length - 1] = exportDateText;
+      }
+    }
+
+    const aoa = hasVisibleWatermark ? [topRow, headers] : [headers];
 
     rows.forEach((row) => {
       aoa.push(columns.map((col) => {
@@ -158,11 +177,20 @@
         ws[ref] = { ...ws[ref], ...cell };
       });
     });
-    if (hasVisibleWatermark && headers.length) {
+    if (hasVisibleWatermark && headers.length && !hasExportDate) {
       ws["!merges"] = [
         ...(ws["!merges"] || []),
         { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } },
       ];
+      ws["!rows"] = [{ hpt: 24 }];
+    }
+    if (hasVisibleWatermark && hasExportDate && headers.length) {
+      if (headers.length > 1) {
+        ws["!merges"] = [
+          ...(ws["!merges"] || []),
+          { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 2 } },
+        ];
+      }
       ws["!rows"] = [{ hpt: 24 }];
     }
     ws["!cols"] = headers.map((header, index) => getColumnWidth(rows, columns, index, header, options));
@@ -228,6 +256,7 @@
     exportTableToExcel,
     exportRowsToExcel,
     exportRowsToCsv,
+    formatTurkishDate,
   };
   window.exportTableToExcel = exportTableToExcel;
   window.exportRowsToExcel = exportRowsToExcel;

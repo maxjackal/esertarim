@@ -154,6 +154,15 @@
     return refs.fromDate?.value === today && refs.toDate?.value === today;
   }
 
+  function exportDateForFileName() {
+    if (window.ExcelExportUtils?.formatTurkishDate) {
+      return window.ExcelExportUtils.formatTurkishDate();
+    }
+
+    const [yyyy, mm, dd] = todayAsInputValue().split("-");
+    return `${dd}.${mm}.${yyyy}`;
+  }
+
 
 
   function fillSelect(selectEl, items, labelFn, placeholder = "Seçiniz") {
@@ -710,6 +719,11 @@
 
     refs.exportBtn?.addEventListener("click", () => {
       try {
+        const exportDate = exportDateForFileName();
+        const baseFileName = isTodayFilterActive()
+          ? (state.ledgerId ? `defter-${state.ledgerId}-bugun-kayitlari` : "defter-bugun-kayitlari")
+          : (state.ledgerId ? `defter-${state.ledgerId}-kayitlari` : "defter-kayitlari");
+
         window.ExcelExportUtils.exportRowsToExcel(
           state.currentItems,
           [
@@ -726,11 +740,9 @@
             { label: "Durum", value: (row) => paymentStatusText(row.payment_status), width: 12 },
             { label: "Uyarı", value: (row) => row.weight_warning ? "Uyarılı" : "", width: 9 },
           ],
-          isTodayFilterActive()
-            ? (state.ledgerId ? `defter-${state.ledgerId}-bugun-kayitlari.xlsx` : "defter-bugun-kayitlari.xlsx")
-            : (state.ledgerId ? `defter-${state.ledgerId}-kayitlari.xlsx` : "defter-kayitlari.xlsx"),
+          `${baseFileName}-${exportDate}.xlsx`,
           "Kayıtlar",
-          { maxColumnWidth: 16 }
+          { maxColumnWidth: 16, visibleExportDate: true, exportDateText: exportDate }
         );
       } catch (err) {
         toast(err.message, "error");
