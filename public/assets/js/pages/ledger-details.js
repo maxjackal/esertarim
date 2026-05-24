@@ -1,6 +1,7 @@
 (() => {
 const url = new URL(window.location.href);
 const queryId = Number(url.searchParams.get("id") || 0);
+const queryProductId = Number(url.searchParams.get("product_id") || 0);
 const pathParts = url.pathname.split("/").filter(Boolean);
 const lastPart = Number(pathParts[pathParts.length - 1] || 0);
 
@@ -208,22 +209,44 @@ let currentItems = [];
       .join("");
   }
 
+  async function resolveLedgerContext() {
+    try {
+      const ledger = await window.ApiService.ledgers.getById(ledgerId);
+
+      if (ledger?.buyer_id && (!queryProductId || Number(ledger.product_id || 0) === queryProductId)) {
+        return {
+          buyer_id: ledger.buyer_id,
+          product_id: queryProductId || ledger.product_id,
+        };
+      }
+    } catch (_) {
+      // Eski linklerde id bir defter değil, kayıt id'si olabilir. Aşağıda kayıt üzerinden çözüyoruz.
+    }
+
+    const baseEntry = await window.ApiService.ledgerEntries.getById(ledgerId);
+    if (!baseEntry) return null;
+
+    return {
+      buyer_id: baseEntry.buyer_id,
+      product_id: queryProductId || baseEntry.product_id,
+    };
+  }
+
   async function loadLedgerDetail() {
     if (!ledgerId) {
       showToastSafe("error", "Geçersiz defter id");
       return;
     }
 
-    // First fetch the base entry to know which buyer/product we are talking about
-    const baseEntry = await window.ApiService.ledgerEntries.getById(ledgerId);
-    if (!baseEntry) {
-      showToastSafe("error", "Kayıt bulunamadı");
+    const ledgerContext = await resolveLedgerContext();
+    if (!ledgerContext?.buyer_id || !ledgerContext?.product_id) {
+      showToastSafe("error", "Defter bilgisi bulunamadı");
       return;
     }
 
     const filters = {
-       buyer_id: baseEntry.buyer_id,
-       product_id: baseEntry.product_id
+       buyer_id: ledgerContext.buyer_id,
+       product_id: ledgerContext.product_id
     };
 
     const from = (els.fromDate?.value || "").trim();
@@ -269,6 +292,7 @@ let currentItems = [];
     const url = new URL(window.location.href);
 
     url.searchParams.set("id", String(ledgerId));
+    if (queryProductId) url.searchParams.set("product_id", String(queryProductId));
 
     const from = (els.fromDate?.value || "").trim();
     const to = (els.toDate?.value || "").trim();
