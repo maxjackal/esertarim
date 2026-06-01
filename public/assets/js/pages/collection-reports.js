@@ -53,6 +53,11 @@
       .replaceAll("'", "&#39;");
   }
 
+  function truncateText(value, maxLength = 36) {
+    const text = String(value ?? "").trim();
+    return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
+  }
+
   function getSellerLabel(item) {
     return `${item.first_name || ""} ${item.last_name || ""}`.trim();
   }
@@ -283,7 +288,9 @@
           <td class="py-3 pr-4">${escapeHtml(item.product_name || "")}</td>
           <td class="py-3 pr-4 font-semibold text-emerald-600">${formatMoney(item.amount || 0)}</td>
           <td class="py-3 pr-4">${escapeHtml(paymentMethodLabel(item.payment_method))}</td>
-          <td class="py-3 pr-4">${escapeHtml(item.note || "")}</td>
+          <td class="max-w-60 truncate py-3 pr-4" title="${escapeHtml(item.note || "")}">
+            ${escapeHtml(truncateText(item.note))}
+          </td>
           <td class="py-3 pr-4">${escapeHtml(item.created_by || "-")}</td>
         </tr>
       `).join("");
