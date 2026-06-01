@@ -3,6 +3,7 @@
 
   const refs = {
     dashboardDate: $("dashboardDate"),
+    buyerFilter: $("buyerFilter"),
     filterBtn: $("filterBtn"),
 
     entryCount: $("entryCount"),
@@ -43,15 +44,54 @@
 
   const escapeHtml = window.AppSecurity?.escapeHtml || ((value) => String(value ?? ""));
 
-  function buildQuery() {
-    const params = new URLSearchParams();
-    if (refs.dashboardDate?.value) {
-      params.set("date", refs.dashboardDate.value);
-    }
-    return params.toString() ? `?${params.toString()}` : "";
+  function fillBuyerFilter(items = []) {
+    if (!refs.buyerFilter) return;
+
+    refs.buyerFilter.innerHTML = '<option value="">Tümü</option>';
+    items.forEach((buyer) => {
+      const option = document.createElement("option");
+      option.value = buyer.id;
+      option.textContent = buyer.name || "";
+      refs.buyerFilter.appendChild(option);
+    });
   }
 
+  function aggregateEntries(entries, keyFn, labelKey) {
+    const grouped = new Map();
 
+    entries.forEach((entry) => {
+      const key = keyFn(entry);
+      if (!key) return;
+
+      const current = grouped.get(key) || {
+        [labelKey]: key,
+        entry_count: 0,
+        total_boxes: 0,
+        total_weight: 0,
+        total_amount: 0,
+        total_remaining: 0,
+      };
+
+      current.entry_count += 1;
+      current.total_boxes += Number(entry.box_count || 0);
+      current.total_weight += Number(entry.net_weight || 0);
+      current.total_amount += Number(entry.total_amount || 0);
+      current.total_remaining += Number(entry.remaining_amount || 0);
+      grouped.set(key, current);
+    });
+
+    return Array.from(grouped.values())
+      .sort((a, b) => b.total_amount - a.total_amount)
+      .slice(0, 5);
+  }
+
+  async function loadBuyers() {
+    const { items } = await window.ApiService.buyers.getAll({
+      order: "name",
+      ascending: true,
+    });
+    fillBuyerFilter(items);
+  }
 
   function renderSummary(summary = {}) {
     refs.entryCount.textContent = summary.entry_count || 0;
@@ -202,6 +242,9 @@
       if (refs.dashboardDate?.value) {
         filters.date = refs.dashboardDate.value;
       }
+      if (refs.buyerFilter?.value) {
+        filters.buyer_id = refs.buyerFilter.value;
+      }
       
       const { items: entries } = await window.ApiService.custom.getLedgerEntriesWithRelations(filters);
       
@@ -213,10 +256,17 @@
           total_remaining: entries.reduce((sum, e) => sum + (e.remaining_amount || 0), 0)
       };
       
-      const { items: payments } = await window.ApiService.ledgerPayments.getAll();
-      const todayStr = new Date().toISOString().split('T')[0];
+      const selectedDate = refs.dashboardDate?.value || new Date().toISOString().split('T')[0];
+      const { items: payments } = await window.ApiService.custom.getPaymentsWithRelations({
+        startDate: selectedDate,
+        endDate: selectedDate,
+      });
       summary.today_collection = payments
-          .filter(p => (p.payment_date || '').startsWith(todayStr))
+          .filter((payment) => {
+            if (payment.status === "cancelled") return false;
+            if (!filters.buyer_id) return true;
+            return String(payment.ledger_entry?.buyer_id || "") === String(filters.buyer_id);
+          })
           .reduce((sum, p) => sum + (p.amount || 0), 0);
           
       summary.open_receivables = summary.total_remaining; // simple assumption
@@ -239,8 +289,16 @@
          .map(([buyer_name, remaining_amount]) => ({ buyer_name, remaining_amount }))
          .sort((a,b) => b.remaining_amount - a.remaining_amount).slice(0, 5);
 
-      const top_products = [];
-      const top_sellers = [];
+      const top_products = aggregateEntries(
+        entries,
+        (entry) => entry.product?.name || "",
+        "product_name"
+      );
+      const top_sellers = aggregateEntries(
+        entries,
+        (entry) => entry.seller ? `${entry.seller.first_name || ""} ${entry.seller.last_name || ""}`.trim() : "",
+        "seller_name"
+      );
 
       renderSummary(summary);
       renderTopProducts(top_products);
@@ -267,9 +325,15 @@
   }
 
   refs.filterBtn?.addEventListener("click", loadDashboard);
+  refs.buyerFilter?.addEventListener("change", loadDashboard);
 
-  window.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("DOMContentLoaded", async () => {
     setDefaultDate();
-    loadDashboard();
+    try {
+      await loadBuyers();
+      await loadDashboard();
+    } catch (err) {
+      toast(err.message, "error");
+    }
   });
 })();
