@@ -61,13 +61,16 @@ jobs:
         run: |
           set -euo pipefail
 
+          PG_DUMP="/usr/lib/postgresql/17/bin/pg_dump"
           BACKUP_DATE="$(date +'%Y-%m-%d')"
           BACKUP_FILE="haldb_$(date +'%Y-%m-%d_%H-%M').sql"
           BACKUP_PATH="backups/${BACKUP_FILE}"
 
           mkdir -p backups
 
-          pg_dump "$SUPABASE_DB_URL" \
+          "$PG_DUMP" --version
+
+          "$PG_DUMP" "$SUPABASE_DB_URL" \
             --clean \
             --if-exists \
             --no-owner \

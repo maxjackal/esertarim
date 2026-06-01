@@ -94,6 +94,22 @@ psql "SUPABASE_DB_URL" < haldb_YYYY-MM-DD_HH-MM.sql
 
 Gerçek kullanımda `SUPABASE_DB_URL` yerine Supabase PostgreSQL connection string verilmelidir. Restore işlemi canlı veritabanını etkileyebileceği için önce hedef ortam ve dosya kontrol edilmelidir.
 
+### Silinen Kayıtları Bulma
+
+Silinmeden önce alınmış yedeği ayrı bir PostgreSQL veritabanına restore edin. Canlı
+veritabanına restore yapmayın. Ardından:
+
+```bash
+chmod +x scripts/find_deleted_rows.sh
+./scripts/find_deleted_rows.sh "LIVE_DB_URL" "BACKUP_DB_URL"
+```
+
+Komut, yedekte bulunup canlı veritabanında bulunmayan satırları tablo bazında
+`deleted_rows_YYYY-MM-DD_HH-MM-SS/` klasörüne CSV olarak yazar.
+
+Bundan sonraki silmeleri satır içeriğiyle kaydetmek için
+`supabase_delete_audit.sql` dosyasını Supabase SQL Editor'da bir kez çalıştırın.
+
 ### Güvenlik Notları
 
 - Google şifresi kullanılmaz.

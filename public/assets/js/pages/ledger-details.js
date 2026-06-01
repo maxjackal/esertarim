@@ -213,7 +213,7 @@ let currentItems = [];
     try {
       const ledger = await window.ApiService.ledgers.getById(ledgerId);
 
-      if (ledger?.buyer_id && (!queryProductId || Number(ledger.product_id || 0) === queryProductId)) {
+      if (ledger?.buyer_id) {
         return {
           buyer_id: ledger.buyer_id,
           product_id: queryProductId || ledger.product_id,

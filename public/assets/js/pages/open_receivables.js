@@ -1,6 +1,7 @@
 (() => {
   const state = {
     sellers: [],
+    selectedSeller: null,
     currentItems: [],
   };
 
@@ -50,6 +51,13 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
+  }
+
+  function normalizeText(value) {
+    return String(value || "")
+      .toLocaleLowerCase("tr-TR")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   function getSellerLabel(item) {
@@ -126,41 +134,36 @@
 
         refs.sellerId.value = String(seller.id);
         refs.sellerSearch.value = getSellerLabel(seller);
+        state.selectedSeller = seller;
         hideSellerDropdown();
       });
     });
   }
 
+  function filterSellers(keyword) {
+    const query = normalizeText(keyword);
+
+    const filtered = state.sellers
+      .filter((seller) => {
+        const label = normalizeText(getSellerLabel(seller));
+        return !query || label.startsWith(query) || label.includes(query);
+      })
+      .slice(0, 20);
+
+    renderSellerDropdown(filtered);
+  }
+
   function setupSellerAutocomplete() {
     if (!refs.sellerSearch || !refs.sellerId || !refs.sellerDropdown) return;
 
-    refs.sellerSearch.addEventListener("input", () => {
-      const query = refs.sellerSearch.value.trim().toLocaleLowerCase("tr-TR");
-
+    refs.sellerSearch.addEventListener("input", (event) => {
       refs.sellerId.value = "";
-
-      if (!query) {
-        hideSellerDropdown();
-        return;
-      }
-
-      const filtered = state.sellers.filter((seller) =>
-        getSellerLabel(seller).toLocaleLowerCase("tr-TR").includes(query)
-      );
-
-      renderSellerDropdown(filtered);
+      state.selectedSeller = null;
+      filterSellers(event.target.value);
     });
 
     refs.sellerSearch.addEventListener("focus", () => {
-      const query = refs.sellerSearch.value.trim().toLocaleLowerCase("tr-TR");
-
-      const filtered = query
-        ? state.sellers.filter((seller) =>
-            getSellerLabel(seller).toLocaleLowerCase("tr-TR").includes(query)
-          )
-        : state.sellers.slice(0, 20);
-
-      renderSellerDropdown(filtered);
+      filterSellers(refs.sellerSearch.value);
     });
 
     refs.sellerSearch.addEventListener("blur", () => {
@@ -181,28 +184,33 @@
         }
 
         const exactMatch = state.sellers.find(
-          (seller) =>
-            getSellerLabel(seller).toLocaleLowerCase("tr-TR") ===
-            rawValue.toLocaleLowerCase("tr-TR")
+          (seller) => normalizeText(getSellerLabel(seller)) === normalizeText(rawValue)
         );
 
         if (exactMatch) {
           refs.sellerId.value = String(exactMatch.id);
           refs.sellerSearch.value = getSellerLabel(exactMatch);
+          state.selectedSeller = exactMatch;
         } else {
           refs.sellerId.value = "";
+          state.selectedSeller = null;
         }
 
         hideSellerDropdown();
       }, 150);
     });
 
-    document.addEventListener("click", (e) => {
-      const target = e.target;
-      const clickedInside =
-        refs.sellerSearch?.contains(target) || refs.sellerDropdown?.contains(target);
+    refs.sellerSearch.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        hideSellerDropdown();
+      }
+    });
 
-      if (!clickedInside) {
+    document.addEventListener("click", (e) => {
+      const field = refs.sellerSearch.closest(".d360-field");
+      if (!field) return;
+
+      if (!field.contains(e.target)) {
         hideSellerDropdown();
       }
     });
@@ -215,7 +223,9 @@
       window.ApiService.products.getAll(),
     ]);
 
-    state.sellers = sellersRes.items || [];
+    state.sellers = (sellersRes.items || []).slice().sort((a, b) => {
+      return getSellerLabel(a).localeCompare(getSellerLabel(b), "tr");
+    });
 
     fillSelect(refs.buyerFilter, buyersRes.items || [], (x) => x.name);
     fillSelect(refs.productFilter, productsRes.items || [], (x) => x.name);
@@ -302,6 +312,7 @@
     refs.toDate.value = "";
     refs.sellerSearch.value = "";
     refs.sellerId.value = "";
+    state.selectedSeller = null;
     hideSellerDropdown();
     refs.buyerFilter.value = "";
     refs.productFilter.value = "";
