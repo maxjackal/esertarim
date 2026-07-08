@@ -39,6 +39,7 @@
     { "source": "/acik-alacaklar", "destination": "/pages/open_receivables" },
     { "source": "/tahsilat-raporu", "destination": "/pages/collection_reports" },
     { "source": "/satici-raporu", "destination": "/pages/seller-report" },
+    { "source": "/sezon-ozeti", "destination": "/pages/season-summary" },
     { "source": "/urunler", "destination": "/pages/products" },
     { "source": "/saticilar", "destination": "/pages/sellers" },
     { "source": "/alicilar", "destination": "/pages/buyers" },

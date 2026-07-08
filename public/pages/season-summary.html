@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sezon Özeti</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="/assets/js/supabase_client.js"></script>
+    <script src="/assets/js/auth_guard.js"></script>
+    <script src="/assets/js/api_service.js"></script>
+    <script src="/assets/js/export_utils.js"></script>
+</head>
+
+<body data-page-title="Sezon Özeti" class="bg-slate-50 text-slate-800">
+    <div class="app-shell">
+        <div class="app-layout">
+            <div id="sidebarMount" class="app-sidebar-wrap"></div>
+            <main class="app-main">
+                <div id="topbarMount"></div>
+                <div class="app-content">
+                    <div class="max-w-7xl mx-auto px-4 py-6">
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                            <div>
+                                <h1 class="text-2xl font-bold">Sezon Özeti</h1>
+                                <p class="text-sm text-slate-500 mt-1">Gönderilen ürün, tahsilat ve kalan borçları sezon kapanışı gibi görüntüleyin.</p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button id="printBtn"
+                                    class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                    Yazdır
+                                </button>
+                                <button id="csvBtn"
+                                    class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                    CSV İndir
+                                </button>
+                                <button id="excelBtn"
+                                    class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+                                    Excel İndir
+                                </button>
+                            </div>
+                        </div>
+
+                        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
+                                <fieldset class="d360-field relative">
+                                    <legend>Satıcı</legend>
+                                    <input id="sellerSearch" type="text" class="d360-input" placeholder="Tüm satıcılar" autocomplete="off" />
+                                    <input id="sellerId" type="hidden" />
+                                    <div id="sellerDropdown"
+                                        class="absolute left-0 right-0 top-[calc(100%+8px)] z-30 hidden max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="d360-field">
+                                    <legend>Alıcı</legend>
+                                    <select id="buyerFilter" class="d360-select">
+                                        <option value="">Tüm Alıcılar</option>
+                                    </select>
+                                </fieldset>
+
+                                <fieldset class="d360-field">
+                                    <legend>Ürün</legend>
+                                    <select id="productFilter" class="d360-select">
+                                        <option value="">Tüm Ürünler</option>
+                                    </select>
+                                </fieldset>
+
+                                <fieldset class="d360-field">
+                                    <legend>Başlangıç Tarihi</legend>
+                                    <input id="fromDate" type="date" class="d360-input" />
+                                </fieldset>
+
+                                <fieldset class="d360-field">
+                                    <legend>Bitiş Tarihi</legend>
+                                    <input id="toDate" type="date" class="d360-input" />
+                                </fieldset>
+
+                                <div class="flex items-end gap-2">
+                                    <button id="filterBtn"
+                                        class="flex-1 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                                        Getir
+                                    </button>
+                                    <button id="clearBtn"
+                                        class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                        Temizle
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                                <p class="text-xs text-slate-500">Toplam Ton</p>
+                                <p id="totalTonText" class="mt-1 text-2xl font-bold text-slate-900">0.00 ton</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                                <p class="text-xs text-slate-500">Toplam Tutar</p>
+                                <p id="totalAmountText" class="mt-1 text-2xl font-bold text-slate-900">0.00 ₺</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                                <p class="text-xs text-slate-500">Ödenen</p>
+                                <p id="totalPaidText" class="mt-1 text-2xl font-bold text-emerald-600">0.00 ₺</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                                <p class="text-xs text-slate-500">Kalan Borç</p>
+                                <p id="totalRemainingText" class="mt-1 text-2xl font-bold text-rose-600">0.00 ₺</p>
+                            </div>
+                        </section>
+
+                        <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                                <p class="text-xs text-slate-500">Tahsilat Oranı</p>
+                                <p id="collectionRateText" class="mt-1 text-xl font-bold">0.00%</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                                <p class="text-xs text-slate-500">Toplam Kasa</p>
+                                <p id="totalBoxesText" class="mt-1 text-xl font-bold">0</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                                <p class="text-xs text-slate-500">Ortalama Fiyat</p>
+                                <p id="avgUnitPriceText" class="mt-1 text-xl font-bold">0.00 ₺/kg</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                                <p class="text-xs text-slate-500">Kayıt / Açık Kayıt</p>
+                                <p id="entryCountText" class="mt-1 text-xl font-bold">0 / 0</p>
+                            </div>
+                        </section>
+
+                        <section class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                                <p class="text-sm font-semibold text-slate-500">En Çok Ürün Gönderen Satıcı</p>
+                                <p id="topSellerText" class="mt-2 text-lg font-bold text-slate-900">-</p>
+                                <p id="topSellerSubText" class="mt-1 text-sm text-slate-500">0.00 ton</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                                <p class="text-sm font-semibold text-slate-500">En Çok Gönderilen Ürün</p>
+                                <p id="topProductText" class="mt-2 text-lg font-bold text-slate-900">-</p>
+                                <p id="topProductSubText" class="mt-1 text-sm text-slate-500">0.00 ton</p>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                                <p class="text-sm font-semibold text-slate-500">En Yüksek Kalan Borç</p>
+                                <p id="topDebtText" class="mt-2 text-lg font-bold text-slate-900">-</p>
+                                <p id="topDebtSubText" class="mt-1 text-sm text-slate-500">0.00 ₺</p>
+                            </div>
+                        </section>
+
+                        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                                <div class="mb-4">
+                                    <h2 class="text-lg font-bold">Ürün Özeti</h2>
+                                    <p class="text-sm text-slate-500">Ürün bazında tonaj, tutar ve borç.</p>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm">
+                                        <thead>
+                                            <tr class="border-b border-slate-200 text-left text-slate-500">
+                                                <th class="py-3 pr-4">Ürün</th>
+                                                <th class="py-3 pr-4">Ton</th>
+                                                <th class="py-3 pr-4">Toplam</th>
+                                                <th class="py-3 pr-4">Kalan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="productSummaryBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                                <div class="mb-4">
+                                    <h2 class="text-lg font-bold">Satıcı Özeti</h2>
+                                    <p class="text-sm text-slate-500">Satıcı bazında sezon performansı.</p>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm">
+                                        <thead>
+                                            <tr class="border-b border-slate-200 text-left text-slate-500">
+                                                <th class="py-3 pr-4">Satıcı</th>
+                                                <th class="py-3 pr-4">Ton</th>
+                                                <th class="py-3 pr-4">Ödenen</th>
+                                                <th class="py-3 pr-4">Kalan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sellerSummaryBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                                <div class="mb-4">
+                                    <h2 class="text-lg font-bold">Alıcı Borç Özeti</h2>
+                                    <p class="text-sm text-slate-500">Alıcı bazında açık borç ve tahsilat.</p>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm">
+                                        <thead>
+                                            <tr class="border-b border-slate-200 text-left text-slate-500">
+                                                <th class="py-3 pr-4">Alıcı</th>
+                                                <th class="py-3 pr-4">Toplam</th>
+                                                <th class="py-3 pr-4">Ödenen</th>
+                                                <th class="py-3 pr-4">Kalan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="buyerSummaryBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/assets/js/pages/season-summary.js"></script>
+    <script src="/assets/js/toast.js"></script>
+    <script src="/assets/js/layout.js"></script>
+</body>
+
+</html>
