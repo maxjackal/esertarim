@@ -91,6 +91,29 @@
     return `Alıcı #${buyer_id} / Ürün #${product_id}`;
   };
 
+  const fetchAllPages = async (buildQuery, pageSize = 1000) => {
+    const allRows = [];
+    let from = 0;
+
+    while (true) {
+      const to = from + pageSize - 1;
+      const { data, error } = await buildQuery().range(from, to);
+
+      if (error) {
+        logSupabaseError(error);
+        throw new Error(error.message);
+      }
+
+      const rows = data || [];
+      allRows.push(...rows);
+
+      if (rows.length < pageSize) break;
+      from += pageSize;
+    }
+
+    return allRows;
+  };
+
   const getOrCreateLedger = async ({ buyer_id, product_id, ledger_title }) => {
     const buyerId = toNullableNumber(buyer_id);
     const productId = toNullableNumber(product_id);
@@ -337,42 +360,45 @@
     custom: {
        getLedgerEntriesWithRelations: async (filters = {}) => {
           // Supabase'in Foreign Key ilişkilerini kullanarak join atıyoruz.
-          let query = window.sb.from('ledger_entries').select(`
-             id,
-             ledger_id,
-             created_at,
-             buyer_id,
-             seller_id,
-             product_id,
-             box_count,
-             net_weight,
-             avg_box_weight,
-             total_amount,
-             remaining_amount,
-             unit_price,
-             paid_amount,
-             payment_status,
-             note,
-             weight_warning,
-             entry_date,
-             buyer:buyer_id (id, name),
-             seller:seller_id (id, first_name, last_name),
-             product:product_id (id, name)
-          `).order('entry_date', { ascending: false });
-          
-          if (filters.id) query = query.eq('id', filters.id);
-          if (filters.ledger_id) query = query.eq('ledger_id', filters.ledger_id);
-          if (filters.date) query = query.eq('entry_date', filters.date);
-          if (filters.startDate) query = query.gte('entry_date', filters.startDate);
-          if (filters.endDate) query = query.lte('entry_date', filters.endDate);
-          if (filters.buyer_id) query = query.eq('buyer_id', filters.buyer_id);
-          if (filters.seller_id) query = query.eq('seller_id', filters.seller_id);
-          if (filters.product_id) query = query.eq('product_id', filters.product_id);
-          if (filters.status) query = query.eq('payment_status', filters.status);
+          const buildQuery = () => {
+             let query = window.sb.from('ledger_entries').select(`
+                id,
+                ledger_id,
+                created_at,
+                buyer_id,
+                seller_id,
+                product_id,
+                box_count,
+                net_weight,
+                avg_box_weight,
+                total_amount,
+                remaining_amount,
+                unit_price,
+                paid_amount,
+                payment_status,
+                note,
+                weight_warning,
+                entry_date,
+                buyer:buyer_id (id, name),
+                seller:seller_id (id, first_name, last_name),
+                product:product_id (id, name)
+             `).order('entry_date', { ascending: false }).order('id', { ascending: false });
+             
+             if (filters.id) query = query.eq('id', filters.id);
+             if (filters.ledger_id) query = query.eq('ledger_id', filters.ledger_id);
+             if (filters.date) query = query.eq('entry_date', filters.date);
+             if (filters.startDate) query = query.gte('entry_date', filters.startDate);
+             if (filters.endDate) query = query.lte('entry_date', filters.endDate);
+             if (filters.buyer_id) query = query.eq('buyer_id', filters.buyer_id);
+             if (filters.seller_id) query = query.eq('seller_id', filters.seller_id);
+             if (filters.product_id) query = query.eq('product_id', filters.product_id);
+             if (filters.status) query = query.eq('payment_status', filters.status);
 
-          const { data, error } = await query;
-          if (error) throw new Error(error.message);
-          return { items: data || [] };
+             return query;
+          };
+
+          const data = await fetchAllPages(buildQuery);
+          return { items: data };
        },
        
        getPaymentsWithRelations: async (filters = {}) => {
